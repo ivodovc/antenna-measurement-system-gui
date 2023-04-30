@@ -6,36 +6,43 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>857</width>
-    <height>519</height>
+    <width>943</width>
+    <height>542</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Antenna Measurement System</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="gridLayoutWidget">
+   <widget class="QWidget" name="gridWidget" native="true">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>10</y>
       <width>661</width>
-      <height>61</height>
+      <height>102</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true">QWidget#gridWidget{
+border-radius: 5px; border: 1px solid white;
+border-color: rgb(0, 0, 0);}</string>
+    </property>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="2" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>From [MHz]</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="3">
-      <widget class="QLineEdit" name="lineEdit_2"/>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="lineEdit"/>
+     <property name="leftMargin">
+      <number>5</number>
+     </property>
+     <property name="topMargin">
+      <number>5</number>
+     </property>
+     <property name="rightMargin">
+      <number>5</number>
+     </property>
+     <property name="bottomMargin">
+      <number>5</number>
+     </property>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="lineEdit_3"/>
      </item>
      <item row="2" column="2">
       <widget class="QLabel" name="label_3">
@@ -44,32 +51,59 @@
        </property>
       </widget>
      </item>
+     <item row="2" column="3">
+      <widget class="QLineEdit" name="lineEdit_2"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>From [MHz]</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0" colspan="5">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Message:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Step [MHz]</string>
+       </property>
+      </widget>
+     </item>
      <item row="1" column="0" colspan="4">
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Frequency Range: 27-2700 MHz</string>
+        <string>Linear frequency sweep configuration (27-2700 MHz)</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
-     <item row="2" column="4">
-      <widget class="QPushButton" name="pushButton">
+     <item row="2" column="4" rowspan="2">
+      <widget class="QPushButton" name="measButton">
        <property name="text">
-        <string>Go</string>
+        <string>Measure</string>
        </property>
       </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="lineEdit"/>
      </item>
     </layout>
    </widget>
    <widget class="PlotWidget" name="graphwidget" native="true">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>80</y>
-      <width>811</width>
-      <height>421</height>
+      <x>0</x>
+      <y>130</y>
+      <width>921</width>
+      <height>401</height>
      </rect>
     </property>
     <property name="autoFillBackground">
@@ -79,8 +113,155 @@
      <string notr="true">background-color: rgb(200, 200, 200);</string>
     </property>
    </widget>
+   <widget class="QWidget" name="gridWidget2" native="true">
+    <property name="geometry">
+     <rect>
+      <x>780</x>
+      <y>10</y>
+      <width>151</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QWidget#gridWidget2{
+border-radius: 5px; border: 1px solid white;
+border-color: rgb(0, 0, 0);
+}</string>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <property name="leftMargin">
+      <number>5</number>
+     </property>
+     <property name="topMargin">
+      <number>5</number>
+     </property>
+     <property name="rightMargin">
+      <number>5</number>
+     </property>
+     <property name="bottomMargin">
+      <number>5</number>
+     </property>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="lineEdit_4">
+       <property name="text">
+        <string>filename.csv</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" colspan="2">
+      <widget class="QPushButton" name="saveButton">
+       <property name="mouseTracking">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Save as CSV</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QPushButton" name="newWindowButton">
+    <property name="geometry">
+     <rect>
+      <x>790</x>
+      <y>90</y>
+      <width>131</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Graph in New Window</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="PLLsettingsWidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>680</x>
+      <y>10</y>
+      <width>91</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QWidget#PLLsettingsWidget{
+border-radius: 5px; border: 1px solid white;
+border-color: rgb(0, 0, 0);
+}</string>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_3">
+     <property name="leftMargin">
+      <number>5</number>
+     </property>
+     <property name="topMargin">
+      <number>5</number>
+     </property>
+     <property name="rightMargin">
+      <number>5</number>
+     </property>
+     <property name="bottomMargin">
+      <number>5</number>
+     </property>
+     <item row="1" column="0">
+      <widget class="QComboBox" name="comboBox">
+       <item>
+        <property name="text">
+         <string>4 (5 dBm)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3 (2 dBm)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2 (-1 dBm)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1 (-4 dBm)</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>PLL Output 
+Power</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>943</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuMenu">
+    <property name="title">
+     <string>Sweep</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuAdvanced">
+    <property name="title">
+     <string>Advanced</string>
+    </property>
+   </widget>
+   <addaction name="menuMenu"/>
+   <addaction name="menuAdvanced"/>
+  </widget>
  </widget>
  <customwidgets>
   <customwidget>
