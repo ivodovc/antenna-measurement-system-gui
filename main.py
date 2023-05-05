@@ -30,6 +30,7 @@ class MainWindow(QtWidgets.QMainWindow):
         #self.plot_all_files()
         self.graphwidgetgeometry = self.graphwidget.frameGeometry()
         self.data_x, self.data_y = [],[]
+        self.plot([], [], "first")
         #self.i=0
         #self.plot_0_and_1()
         #self.plot_calibrate()
@@ -41,22 +42,19 @@ class MainWindow(QtWidgets.QMainWindow):
         print("Save Clicked")
 
     def start_data_reception(self):
-        bt_thread = threading.Thread(target=blue.data_reception_cycle, args=(self.updateData, ), daemon=True)
-        bt_thread.start()
         self.index = 0
         self.raw_buffer = ""
         self.buff_index = 0
+        bt_thread = threading.Thread(target=blue.data_reception_cycle, args=(self.updateData, ), daemon=True)
+        bt_thread.start()
 
     
     def updateData(self, data):
-        print("new data", data)
         fx, fy = self.split_raw_data(data)
         self.data_x += fx
         self.data_y += fy
         self.plotLine.setData(self.data_x, self.data_y)
-        print(self.plotLine)
         #self.plot(self.data_x, self.data_y, "test")
-        print(self.data_x, self.data_y)
 
 
     def split_raw_data(self, data):
@@ -79,7 +77,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def measButtonClicked(self):
         self.graphwidget.clear()
+        self.plotLine.clear()
         self.plot([],[],"first")
+        self.data_x = []
+        self.data_y = []
         self.start_data_reception()
         # get params
         from_text = self.fromEdit.text()
@@ -191,12 +192,21 @@ class MainWindow(QtWidgets.QMainWindow):
 random.seed()
 app = QtWidgets.QApplication([])
 
-load_data_global()
-calibrate_linear()
+#load_data_global()
+#calibrate_linear()
 #print(cal_values)
 window = MainWindow()
 window.show()
 blue = blue.Blue(window)
+
+bg1 = pg.BarGraphItem(x=0.5, height=0.5, width=0.2, brush='r')
+w = window.barGraph
+w.setBackground('w')
+w.setXRange(0,1)
+w.setYRange(0,1)
+w.addItem(bg1)
+w.getPlotItem().hideAxis("bottom")
+
 x = threading.Thread(target=blue.connect, args=(), daemon=True)
 x.start()
 app.exec()
