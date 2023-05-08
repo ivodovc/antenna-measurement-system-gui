@@ -2,6 +2,12 @@ import socket
 import time
 from bluetooth import *
 from PyQt6 import QtGui
+from PyQt6.QtCore import *
+import threading
+
+class CustomSignals(QObject):
+    statusChanged = pyqtSignal(str)
+    dataUpdated = pyqtSignal(str)
 
 class Blue:
 
@@ -10,16 +16,23 @@ class Blue:
         self.device_combo = self.mainwindow.devices_comboBox
         self.mainwindow.refreshButton.clicked.connect(self.list_devices)
         self.mainwindow.disconnectButton.clicked.connect(self.disconnect)
-        self.mainwindow.connectButton.clicked.connect(self.connect)
+        self.mainwindow.connectButton.clicked.connect(self.connectButtonAction)
         self.mainwindow.amsversionButton.clicked.connect(self.amsversion)
         self.mainwindow.amshowareyouButton.clicked.connect(self.amshowareyou)
         self.connected = False
+        self.signals = CustomSignals()
+        #print(self.amberStyleSheet)
+
+    def connectButtonAction(self):
+        self.x = threading.Thread(target=self.connect, args=(), daemon=True)
+        self.x.start()
 
     def connect(self):
         HC06_address = '98:D3:31:90:53:B3' # Server Address
         port = 1  # HC06 setting
         self.s = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
-        self.mainwindow.con_status.setText("Attempting...")
+        #self.mainwindow.status_widget.setStyleSheet(self.amberStyleSheet)
+        self.signals.statusChanged.emit("attempting")
         try:
             self.s.connect((HC06_address,port))
         except Exception as e:
@@ -41,14 +54,14 @@ class Blue:
     # Starts receving data and sending it to function f
     # cycle in loop until timeout or ]
     # run in other thread
-    def data_reception_cycle(self, f):
+    def data_reception_cycle(self):
         try:
             while 1:
                 data = self.s.recv(1024).decode('utf-8')
                 if "]" in data:
                     print("Succseful")
                     return
-                f(data)
+                self.signals.dataUpdated.emit(data)
                 if (len(data)==0):
                     return
         except Exception as e:
@@ -56,7 +69,8 @@ class Blue:
             return
 
     def disconnect(self):
-        self.s.close()
+        if hasattr(self, 's'):
+            self.s.close()
         self.setConnected(False)
 
     def list_devices(self):
@@ -67,19 +81,18 @@ class Blue:
     def setConnected(self, b):
         if b:
             self.connected = True
-            self.mainwindow.con_status.setText("AMS connected")
-            self.mainwindow.status_wrap.setStyleSheet('background-color: rgb(104, 255, 101);')
+            self.signals.statusChanged.emit("connected")
             
         else:
             self.connected = False
-            self.mainwindow.con_status.setText("Not connected")
-            self.mainwindow.status_wrap.setStyleSheet('background-color: rgb(255, 104, 101);')
+            self.signals.statusChanged.emit("not_connected")
 
     def isConnected(self):
         return self.connected
 
     def amsversion(self):
         self.send_message("AMS_VERSION()")
+        time.sleep(0.1)
         try:
             response = self.s.recv(1024).decode('utf-8')
             self.mainwindow.amsversionText.setText(response)
@@ -88,6 +101,7 @@ class Blue:
 
     def amshowareyou(self):
         self.send_message("AMS_HOWAREYOU()")
+        time.sleep(0.5)
         try:
             response = self.s.recv(1024).decode('utf-8')
             self.mainwindow.amsversionText.setText(response)

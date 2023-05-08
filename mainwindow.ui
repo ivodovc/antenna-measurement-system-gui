@@ -629,6 +629,196 @@ border-color: rgb(0, 0, 0);
       </property>
      </widget>
     </widget>
+    <widget class="QWidget" name="CalibrationTab">
+     <attribute name="title">
+      <string>Calibration</string>
+     </attribute>
+     <widget class="QWidget" name="calibrationSettings" native="true">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>491</width>
+        <height>121</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QWidget#calibrationSettings{
+border-radius: 5px; border: 1px solid white;
+border-color: rgb(0, 0, 0);}</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_11">
+       <property name="leftMargin">
+        <number>5</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
+       <property name="bottomMargin">
+        <number>5</number>
+       </property>
+       <item row="2" column="2">
+        <widget class="QLabel" name="label_25">
+         <property name="text">
+          <string>To [MHz]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_23">
+         <property name="text">
+          <string>From [MHz]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="fromEdit_3">
+         <property name="cursor">
+          <cursorShape>IBeamCursor</cursorShape>
+         </property>
+         <property name="inputMethodHints">
+          <set>Qt::ImhDigitsOnly</set>
+         </property>
+         <property name="text">
+          <string>500</string>
+         </property>
+         <property name="clearButtonEnabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="4">
+        <widget class="QLabel" name="label_24">
+         <property name="text">
+          <string>Linear frequency sweep configuration (27-2700 MHz)</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="3">
+        <widget class="QLineEdit" name="toEdit_2">
+         <property name="text">
+          <string>1000</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" rowspan="3" colspan="4">
+        <widget class="QLabel" name="msgLabel_3">
+         <property name="text">
+          <string>Message:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="5">
+        <widget class="QPushButton" name="calibrateShortButton">
+         <property name="text">
+          <string>Calibrate Short</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="5">
+        <widget class="QPushButton" name="calibrateMatchButton">
+         <property name="text">
+          <string>Calibrate Match</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="5">
+        <widget class="QPushButton" name="testMeasureButton">
+         <property name="text">
+          <string>Test Measure</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="PLLsettingsWidget_3" native="true">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>20</y>
+        <width>91</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QWidget#PLLsettingsWidget_3{
+border-radius: 5px; border: 1px solid white;
+border-color: rgb(0, 0, 0);
+}</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_12">
+       <property name="leftMargin">
+        <number>5</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
+       <property name="bottomMargin">
+        <number>5</number>
+       </property>
+       <item row="1" column="0">
+        <widget class="QComboBox" name="comboBox_3">
+         <item>
+          <property name="text">
+           <string>4 (5 dBm)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>3 (2 dBm)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2 (-1 dBm)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1 (-4 dBm)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_27">
+         <property name="text">
+          <string>PLL Output 
+Power</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="PlotWidget" name="calibratePlot" native="true">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>150</y>
+        <width>741</width>
+        <height>391</height>
+       </rect>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(200, 200, 200);</string>
+      </property>
+     </widget>
+    </widget>
     <widget class="QWidget" name="Tab4">
      <attribute name="title">
       <string>Connection Settings</string>
@@ -640,7 +830,7 @@ border-color: rgb(0, 0, 0);
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>180</y>
+        <y>120</y>
         <width>591</width>
         <height>81</height>
        </rect>
@@ -703,7 +893,7 @@ border-color: rgb(0, 0, 0);
        </rect>
       </property>
       <property name="text">
-       <string>This program attepmts to connect automatically to Measurement System (address 98:D3:31:90:53:B3) at startup.
+       <string>This program attepmts to connect automatically to Antenna Measurement System (address 98:D3:31:90:53:B3)
 </string>
       </property>
      </widget>
@@ -740,7 +930,7 @@ border-color: rgb(0, 0, 0);
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>270</y>
+        <y>210</y>
         <width>551</width>
         <height>101</height>
        </rect>
