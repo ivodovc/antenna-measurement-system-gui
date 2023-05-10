@@ -6,7 +6,7 @@ import pyqtgraph as pg
 import random
 import os
 import sys
-from data_processing import load_data, calibrate, calibrate_linear, load_data_global, values, cal_values
+from data_processing import load_data_csv, calibrate, calibrate_linear, load_data_global, values, cal_values
 import blue
 import threading
 
@@ -30,44 +30,18 @@ class GraphHandler:
         self.graphwidgetgeometry = self.graphwidget.frameGeometry()
         self.plotLines = []
         self.data_x, self.data_y = [],[]
+        self.clear()
 
     def plot(self, x, y, name):
         pen = pg.mkPen(color=(random.random()*255, random.random()*255, random.random()*255), width=3)
         plotLine = self.graphwidget.plot(x, y, pen=pen, name=name)
         self.plotLines.append(plotLine)
 
-    def plot_atenuator(self, freq):
-        db = []
-        y = []
-        for key in values:
-            if "atenuator" not in key:
-                continue
-            db_val = -int(key[5])
-            if "12" in key:
-                db_val = -12
-            if "10" in key:
-                db_val = -10
-            ADC_val_index = values[key][0].index(freq)
-            ADC_val = values[key][1][ADC_val_index]
-            db.append(db_val)
-            y.append(ADC_val)
-        zipped = sorted(zip(db, y), reverse=True)
-        lists = [list(t) for t in zip(*zipped)]
-        #print(lists[0])
-        #print(freq)
-        self.plot(lists[1], lists[0], str(freq)+"MHz")
-
-    def plot_all_files(self):
-        for file in os.listdir("vsetko"):
-             if file.endswith(".txt"):
-                x, y = load_data("vsetko/" + str(file))
-                self.plot(x,y, file)
-
-    def plot_calibrate(self):
-        for key in cal_values:
-            x = cal_values[key][0]
-            y = cal_values[key][1]
-            self.plot(x, y, key)
+    def clear(self):
+        self.graphwidget.clear()
+        self.plotLines = []
+        self.plot(cal_short[0], cal_short[1], "short")
+        self.plot(cal_match[0], cal_match[1], "match")
 
     def init_plot(self):
         self.graphwidget.setBackground('w')
@@ -131,14 +105,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowIcon(QtGui.QIcon('vut_logo.png'))
 
         self.graph = GraphHandler(self)
+        self.singleFreq2 = SingleFreqHandlerVersion2(self)
+
         self.saveButton.clicked.connect(self.saveButtonClicked)
         self.measButton.clicked.connect(self.measButtonClicked)
         self.newWindowButton.clicked.connect(self.newWindowButtonClicked)
+        self.clearButton.clicked.connect(self.clearGraphClicked)
         self.threadpool = QThreadPool()
         self.init_stylesheets()
         self.blue = blue.Blue(self)
         self.blue.signals.statusChanged.connect(self.setConnectionStatus)
         self.blue.signals.dataUpdated.connect(self.graph.updateData)
+
+        
+        self.singleFreq = SingleFreqHandler(self)
         #self.plot_all_files()
         
         #self.i=0
@@ -150,17 +130,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def saveButtonClicked(self):
         print("Save Clicked")
 
+    def clearGraphClicked(self):
+        self.graph.clear()
+
     def start_data_reception(self):
         self.index = 0
         self.graph.createNewPlotLine()
         bt_thread = threading.Thread(target=self.blue.data_reception_cycle, args=(), daemon=True)
         bt_thread.start()
 
-    def measButtonClicked(self):
-        #self.graphwidget.clear()
-        #self.plotLine.clear()
-        self.start_data_reception()
-        # get params
+    def getSweepInputs(self):
         from_text = self.fromEdit.text()
         to_text = self.toEdit.text()
         step_text = self.stepEdit.text()
@@ -190,10 +169,21 @@ class MainWindow(QtWidgets.QMainWindow):
         if (step_int < 1):
             self.msgLabel.setText("Step is too small")
             return
+        return from_int, to_int, step_int
+
+    def measButtonClicked(self):
+        # get params
+        parsed_args = self.getSweepInputs()
+        if parsed_args is not None:
+            from_int, to_int, step_int = parsed_args
+        else:
+            #bad parsing
+            return
         command = "AMS_SWEEP(" + str(from_int) + ", " + str(to_int) + ", " + str(step_int) + ")"
         self.msgLabel.setText("Command '" + command + "' sent.")
         if (self.blue.isConnected()):
             self.blue.send_message(command)
+            self.start_data_reception()
         else:
             self.msgLabel.setText("Not connected to AMS ")
 
@@ -235,11 +225,114 @@ class MainWindow(QtWidgets.QMainWindow):
                 }
         '''
 
+class SingleFreqHandler():
+    
+
+    def __init__(self, mainwindow):
+        self.mainwindow = mainwindow
+        self.g = mainwindow.singleFreqGraph
+        self.g.setBackground('w')
+        self.blue = mainwindow.blue
+
+        self.x, self.y, self.i = [], [], 0
+
+        self.mainwindow.startButton.clicked.connect(self.startButtonClicked)
+        self.mainwindow.stopButton.clicked.connect(self.stopButtonClicked)
+        self.blue.signals.singleDataUpdated.connect(self.update)
+        pen = pg.mkPen(color=(random.random()*255, random.random()*255, random.random()*255), width=3)
+        self.plotLine = self.g.plot([], [], pen=pen, name="Continuous Sweep")
+        shortpen = pg.mkPen(color=(0,0,255), width=3)
+        #self.g.plot(cal_short[0], cal_short[1], pen=shortpen, name="Short")
+        matchpen = pg.mkPen(color=(255,0,0), width=3)
+        #self.g.plot(cal_match[0], cal_match[1], pen=matchpen, name="Match")
+
+    def start_data_reception(self):
+        self.index = 0
+        self.x, self.y = [],[]
+        self.i = None
+        self.plotLine.clear()
+        self.raw_buffer = ""
+        self.buff_index = 0
+        bt_thread = threading.Thread(target=self.blue.data_reception_cycle2, args=(self.blue.signals.singleDataUpdated,), daemon=True)
+        bt_thread.start()
+
+    def startButtonClicked(self):
+        f = int(self.mainwindow.singlefreqEdit.text())
+        step = int(self.mainwindow.singleStepEdit.text())
+        command = "AMS_SINGLE(" + str(f) + ", " + str(step) + ")"
+        if (self.blue.isConnected()):
+            self.blue.send_message(command)
+            self.start_data_reception()
+        else:
+            self.msgLabel.setText("Not connected to AMS ")
+    
+    def stopButtonClicked(self):
+        command = "AMS_STOP()"
+        if (self.blue.isConnected()):
+            self.blue.send_message(command)
+        else:
+            self.msgLabel.setText("Not connected to AMS ")
+
+    def update(self, data):
+        print(self.x, self.y)
+        fx,fy = self.split_raw_data(data)
+        for index in range(len(fx)):
+            x = fx[index]
+            y = fy[index]
+            if (self.i is None):
+                self.x.append(x)
+                self.y.append(y)
+                self.i=0
+            else:
+                last_x = self.x[self.i]
+                if x<last_x:
+                    self.i = 0
+                else:
+                    self.i+=1
+                if (self.i < len(self.x)):
+                    self.x[self.i] = x
+                    self.y[self.i] = y
+                else:
+                    self.x.append(x)
+                    self.y.append(y)
+        self.plotLine.setData(self.x, self.y)
 
 
+    def split_raw_data(self, data):
+        self.raw_buffer += data
+        found_datapoints_x = []
+        found_datapoints_y = []
+        while self.buff_index < len(self.raw_buffer):
+            c = self.raw_buffer[self.buff_index]
+            if (c=="}"):
+                opening = self.raw_buffer.rfind("{", 0, self.buff_index)
+                x,y = self.raw_buffer[opening+1: self.buff_index].split(",")
+                x_int, y_int = int(x), int(y)
+                found_datapoints_x.append(x_int)
+                found_datapoints_y.append(y_int)
+                self.raw_buffer = self.raw_buffer[self.buff_index+1:]
+                self.buff_index=0
+            else:
+                self.buff_index+=1
+        print("returning:", found_datapoints_x, found_datapoints_y)
+        return found_datapoints_x, found_datapoints_y
+
+class SingleFreqHandlerVersion2():
+    
+    def __init__(self, mainwindow):
+        self.mainwindow = mainwindow
+        bg1 = pg.BarGraphItem(x=0.5, height=0.5, width=0.2, brush='r')
+        bg = mainwindow.barGraph
+        bg.setBackground('w')
+        bg.setXRange(0,1)
+        bg.setYRange(0,1)
+        bg.addItem(bg1)
+        bg.getPlotItem().hideAxis("bottom")
 
 # from https://stackoverflow.com/questions/1432924/python-change-the-scripts-working-directory-to-the-scripts-own-directory
 os.chdir(sys.path[0])
+cal_short = load_data_csv("calibration_short.csv")
+cal_match = load_data_csv("calibration_match.csv")
 random.seed()
 app = QtWidgets.QApplication([])
 
@@ -250,13 +343,7 @@ window = MainWindow()
 window.show()
 
 
-bg1 = pg.BarGraphItem(x=0.5, height=0.5, width=0.2, brush='r')
-w = window.barGraph
-w.setBackground('w')
-w.setXRange(0,1)
-w.setYRange(0,1)
-w.addItem(bg1)
-w.getPlotItem().hideAxis("bottom")
+
 
 #x = threading.Thread(target=blue.connect, args=(), daemon=True)
 #x.start()

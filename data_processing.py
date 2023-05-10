@@ -1,6 +1,21 @@
 import os
 
 # Load csv raw data reported by stm32
+def load_data_csv(filename):
+    x_vals = []
+    y_vals = []
+    with open(filename, "r") as file:
+        for line in file:
+            x, y = line.split(",")
+            try:
+                x_vals.append(int(x))
+                y_vals.append(int(y))
+            except ValueError as e:
+                    #print("error:", e)
+                    pass
+    return x_vals, y_vals
+
+# Load csv raw data reported by stm32
 def load_data(filename):
     x_vals = []
     y_vals = []

@@ -8,6 +8,7 @@ import threading
 class CustomSignals(QObject):
     statusChanged = pyqtSignal(str)
     dataUpdated = pyqtSignal(str)
+    singleDataUpdated = pyqtSignal(str)
 
 class Blue:
 
@@ -43,7 +44,6 @@ class Blue:
         self.setConnected(True)
         self.s.setblocking(1)
         self.s.settimeout(1) # 100ms timeout
-        pass
 
     def send_message(self, message):
         if (self.isConnected()):
@@ -58,10 +58,28 @@ class Blue:
         try:
             while 1:
                 data = self.s.recv(1024).decode('utf-8')
-                if "]" in data:
+                self.signals.dataUpdated.emit(data)
+                if ';' in data:
                     print("Succseful")
                     return
-                self.signals.dataUpdated.emit(data)
+                if (len(data)==0):
+                    return
+        except Exception as e:
+            print(e)
+            return
+
+    # Starts receving data and sending it to function f
+    # cycle in loop until timeout or ]
+    # run in other thread
+    # signal to emit
+    def data_reception_cycle2(self, signal):
+        try:
+            while 1:
+                data = self.s.recv(1024).decode('utf-8')
+                if ';' in data:
+                    print("Succseful")
+                    return
+                signal.emit(data)
                 if (len(data)==0):
                     return
         except Exception as e:
