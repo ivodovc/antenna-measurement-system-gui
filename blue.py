@@ -43,11 +43,37 @@ class Blue:
         print("Connection established")
         self.setConnected(True)
         self.s.setblocking(1)
-        self.s.settimeout(1) # 100ms timeout
+        self.s.settimeout(0.1) # 100ms timeout
 
     def send_message(self, message):
         if (self.isConnected()):
             self.s.send(bytes(message, 'UTF-8'))
+        else:
+            return 0
+
+    def flush_buffer(self):
+        if (self.isConnected()):
+            self.s.setblocking(0)
+            try:
+                while 1:
+                    msg = self.s.recv(1024).decode('utf-8')
+            except Exception as e:
+                self.s.setblocking(1)
+                return
+        else:
+            return 0
+    # receives message till termination syombl;
+    def receive_message(self):
+        received_msg = ""
+        if (self.isConnected()):
+            while 1:
+                msg = self.s.recv(1024).decode('utf-8')
+                received_msg += msg
+                if ';' in msg:
+                    print("Succseful")
+                    return received_msg
+                if (len(msg)==0):
+                    return received_msg
         else:
             return 0
 
@@ -77,7 +103,6 @@ class Blue:
             while 1:
                 data = self.s.recv(1024).decode('utf-8')
                 if ';' in data:
-                    print("Succseful")
                     return
                 signal.emit(data)
                 if (len(data)==0):
@@ -110,18 +135,22 @@ class Blue:
 
     def amsversion(self):
         self.send_message("AMS_VERSION()")
-        time.sleep(0.1)
         try:
-            response = self.s.recv(1024).decode('utf-8')
-            self.mainwindow.amsversionText.setText(response)
+            self.flush_buffer()
+            response = self.receive_message()
+            to_display = response.split("AMS_MSG(")[1].split(");")[0]
+            self.mainwindow.amsversionText.setText(to_display)
         except Exception as e:
-            self.mainwindow.amsversionText.setText("Not responed")
+            self.mainwindow.amsversionText.setText("Error:", e)
+            print(e)
 
     def amshowareyou(self):
         self.send_message("AMS_HOWAREYOU()")
-        time.sleep(0.5)
         try:
-            response = self.s.recv(1024).decode('utf-8')
-            self.mainwindow.amsversionText.setText(response)
+            self.flush_buffer()
+            response = self.receive_message()
+            to_display = response.split("AMS_MSG(")[1].split(");")[0]
+            self.mainwindow.amsversionText.setText(to_display)
         except Exception as e:
-            self.mainwindow.amsversionText.setText("Not responed")
+            self.mainwindow.amsversionText.setText("Error: ", e)
+            print(e)

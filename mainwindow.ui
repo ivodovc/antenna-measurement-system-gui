@@ -291,7 +291,7 @@ border-color: rgb(0, 0, 0);
     </widget>
     <widget class="QWidget" name="SingleFreqTab">
      <attribute name="title">
-      <string>Single Freq</string>
+      <string>Continuous</string>
      </attribute>
      <widget class="QWidget" name="gridWidget_2" native="true">
       <property name="geometry">
@@ -562,7 +562,7 @@ border-color: rgb(0, 0, 0);
     </widget>
     <widget class="QWidget" name="SingleFreq2Tab">
      <attribute name="title">
-      <string>Single Freq 2</string>
+      <string>Single Freq</string>
      </attribute>
      <widget class="QWidget" name="readingWidget_4" native="true">
       <property name="geometry">
