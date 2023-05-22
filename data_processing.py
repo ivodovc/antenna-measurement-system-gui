@@ -149,6 +149,14 @@ def calibrate_linear():
             cal_values[str(db) + "dB_cal"][0].append(freq)
             cal_values[str(db) + "dB_cal"][1].append(cal_hodnota)
 
+def trend_fun(x):
+    #https://math.stackexchange.com/questions/1012707/how-to-invert-a-simple-exponential-growth-formula
+    b = 1.1
+    a = 1
+    p = 9.3
+    y = b-(1+p)**(x-a)
+    return y
+
 # get reflection coefficient
 def get_RC(freq, ADC_reading, pwr_level):
     pwr_txt = str(pwr_level)
@@ -161,7 +169,8 @@ def get_RC(freq, ADC_reading, pwr_level):
     match_val = match_data[1][match_val_i]
     actual_val = ADC_reading
     # simplest algorithm get linear distance between match_val and short_val
-    ref_coefficient = 1-((actual_val-short_val)/(match_val-short_val))
+    linear_val = ((actual_val-short_val)/(match_val-short_val))
+    ref_coefficient = trend_fun(linear_val)
     if ref_coefficient>1:
         ref_coefficient = 1
     if ref_coefficient<0:
@@ -171,8 +180,8 @@ def get_RC(freq, ADC_reading, pwr_level):
 def get_SWR(freq, ADC_reading, pwr_level):
     rc = get_RC(freq, ADC_reading, pwr_level)
     SWR = (1+rc)/(1-rc)
-    if SWR>20:
-        SWR=20
+    if SWR>10:
+        SWR=10
     return SWR
 
 globalCache = dict()

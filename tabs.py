@@ -26,7 +26,7 @@ class GraphHandler:
     def __init__(self, mainwindow, graphwidget, display_mode="default"):
         self.mainwindow = mainwindow
         self.graphwidget = graphwidget
-        self.set_new_display_mode("SWR", 4)
+        self.set_new_display_mode("refcoef", 4)
         self.init_plot()
         self.graphwidgetgeometry = self.graphwidget.frameGeometry()
         self.plotLines = []
