@@ -132,6 +132,32 @@ border-color: rgb(0, 0, 0);}</string>
          </property>
         </widget>
        </item>
+       <item row="3" column="3">
+        <widget class="QComboBox" name="comboBox_4">
+         <item>
+          <property name="text">
+           <string>ADC_reading</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Reflection Coefficient</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>SWR</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QLabel" name="label_27">
+         <property name="text">
+          <string>show_option</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="PlotWidget" name="sweepGraphWidget" native="true">
@@ -265,7 +291,7 @@ border-color: rgb(0, 0, 0);
      <widget class="QPushButton" name="newWindowButton">
       <property name="geometry">
        <rect>
-        <x>640</x>
+        <x>600</x>
         <y>90</y>
         <width>131</width>
         <height>31</height>
@@ -278,7 +304,7 @@ border-color: rgb(0, 0, 0);
      <widget class="QPushButton" name="clearButton">
       <property name="geometry">
        <rect>
-        <x>550</x>
+        <x>520</x>
         <y>90</y>
         <width>81</width>
         <height>31</height>
@@ -1036,6 +1062,70 @@ border-color: rgb(0, 0, 0);}</string>
       <property name="styleSheet">
        <string notr="true">background-color: rgb(200, 200, 200);</string>
       </property>
+     </widget>
+     <widget class="QWidget" name="calibrationPowerWidget" native="true">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>20</y>
+        <width>161</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QWidget#calibrationPowerWidget{
+border-radius: 5px; border: 1px solid white;
+border-color: rgb(0, 0, 0);
+}</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_12">
+       <property name="leftMargin">
+        <number>5</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
+       <property name="bottomMargin">
+        <number>5</number>
+       </property>
+       <item row="1" column="0">
+        <widget class="QComboBox" name="comboBox_3">
+         <item>
+          <property name="text">
+           <string>4 (5 dBm)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>3 (2 dBm)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2 (-1 dBm)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1 (-4 dBm)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_26">
+         <property name="text">
+          <string>Power level for calibration</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </widget>
     <widget class="QWidget" name="Tab4">

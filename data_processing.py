@@ -1,7 +1,16 @@
 import os
+import csv
+from datetime import datetime
+
+DATE_FORMAT = "%d-%m-%Y-%H-%M"
+
+class CalibrationCache():
+
+    def __init__(self):
+        pass
 
 # Load csv raw data reported by stm32
-def load_data_csv(filename):
+def load_data_manual_csv(filename):
     x_vals = []
     y_vals = []
     with open(filename, "r") as file:
@@ -15,24 +24,82 @@ def load_data_csv(filename):
                     pass
     return x_vals, y_vals
 
-# Load csv raw data reported by stm32
-def load_data(filename):
-    x_vals = []
-    y_vals = []
-    with open(filename, "r") as file:
-        for line in file:
-            graph_points = line.rstrip().split(";")
-            for point in graph_points:
-                if (len(point)<1):
-                    continue
-                x, y, voltage = point.split(",")
-                try:
-                    x_vals.append(int(x))
-                    y_vals.append(int(y))
-                except ValueError as e:
-                    #print("error:", e)
-                    pass
-    return x_vals, y_vals
+# reads data from filename
+def load_data_csv(filename):
+    data_x = []
+    data_y = []
+    with open(filename, newline='') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if (row[0]=='frequency'):
+                date = datetime.strptime(row[2], DATE_FORMAT)
+                print(date)
+                continue
+            x = int(row[0])
+            y = int(row[1])
+            data_x.append(x)
+            data_y.append(y)
+    return data_x, data_y
+
+# Save data in format (x_vals, y_vals) to csv file specified by filename
+def save_data_csv(filename, data):
+    with open(filename, "w", newline='') as file:
+        writer = csv.writer(file)
+        datenow_str = datetime.now().strftime(DATE_FORMAT)
+        writer.writerow(("frequency", "ADC value", datenow_str))
+        for i in range(len(data[0])):
+            row = data[0][i], data[1][i]
+            writer.writerow(row)
+
+# gets calibration data saved in local files
+# type is either short or match
+# pwr is power level (could be 1,2,3,4)
+def get_cal_data(type, pwr):
+    calibration_id = "cal_" + type + "_" + get_pwrtext(pwr)
+    if calibration_id in globalCache:
+        return globalCache[calibration_id]
+    else:
+        filename = calibration_id + ".csv"
+        if (os.path.isfile(filename)):
+            data = load_data_csv(calibration_id+".csv")
+            globalCache[calibration_id] = data
+            return data
+        else:
+            return None
+
+def save_cal_data(type, pwr, data):
+    calibration_id = "cal_" + type + "_" + get_pwrtext(pwr)
+    # save to dict
+    globalCache[calibration_id] = data
+    # then save to file
+    save_data_csv(calibration_id+".csv", data)
+
+def delete_cal_data(type, pwr):
+    calibration_id = "cal_" + type + "_" + get_pwrtext(pwr)
+    if calibration_id in globalCache:
+        del globalCache[calibration_id]
+
+def get_pwrtext(pwr):
+    if pwr=="1":
+        return "-4dBm"
+    elif pwr=="2":
+        return "-1dBm"
+    elif pwr=="3":
+        return "2dBm"
+    elif pwr=="4":
+        return "5dBm"
+    else:
+        print("Bad pwr in get_pwrtext")
+        return None
+
+# gets calibration data saved in local files
+# type is either short or match, pwr is 1,2,3,4 (in string)
+def save_cal_data(type, pwr, data):
+    pwrtext = get_pwrtext(pwr)
+    filename = "cal_" + type + "_" + pwrtext + ".csv"
+    print(filename)
+    save_data_csv(filename, data)
+
 
 def calibrate():
     #25 az 2400 MHz
@@ -82,24 +149,23 @@ def calibrate_linear():
             cal_values[str(db) + "dB_cal"][0].append(freq)
             cal_values[str(db) + "dB_cal"][1].append(cal_hodnota)
 
-cal_values = {}
-cal_values["0dB_cal"] = [list(), list()]
-cal_values["2dB_cal"] = [list(), list()]
-cal_values["4dB_cal"] = [list(), list()]
-cal_values["6dB_cal"] = [list(), list()]
-cal_values["8dB_cal"] = [list(), list()]
-cal_values["10dB_cal"] = [list(), list()]
-cal_values["12dB_cal"] = [list(), list()]
-values = {}
-def load_data_global():
-    for file in os.listdir("vsetko"):
-             if file.endswith(".txt"):
-                x, y = load_data("vsetko/" + str(file))
-                name = str(file)
-                values[str(file)] = [x,y]
+# get reflection coefficient
+def get_RC(freq, ADC_reading, pwr_level):
+    short_data = get_cal_data("short", pwr_level)
+    match_data = get_cal_data("match", pwr_level)
+    # get short value at freq
+    shot_val_i = short_data[0].index(freq)
+    match_val_i = match_data[0].index(freq)
+    short_val = short_data[1][shot_val_i]
+    match_val = match_data[1][match_val_i]
+    actual_val = ADC_reading
+    # simplest algorithm get linear distance between match_val and short_val
+    ref_coefficient = (actual_val-short_val/match_val-short_val)
+    return ref_coefficient
 
-# find index of requested frequency and return y value for that frequency
-def get_value_at_freq(filename, freq):
-    all_values = values[filename]
-    index = all_values[0].index(freq)
-    return  all_values[1][index]
+def get_SWR(freq, ADC_reading, pwr_level):
+    rc = get_RC(freq, ADC_reading, pwr_level)
+    SWR = (1+rc)/(1-rc)
+    return SWR
+
+globalCache = dict()

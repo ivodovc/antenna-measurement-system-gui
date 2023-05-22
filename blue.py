@@ -9,6 +9,7 @@ class CustomSignals(QObject):
     statusChanged = pyqtSignal(str)
     dataUpdated = pyqtSignal(str)
     singleDataUpdated = pyqtSignal(str)
+    dataStreamFinished = pyqtSignal(str)
 
 class Blue:
 
@@ -86,7 +87,7 @@ class Blue:
                 data = self.s.recv(1024).decode('utf-8')
                 self.signals.dataUpdated.emit(data)
                 if ';' in data:
-                    print("Succseful")
+                    self.signals.dataStreamFinished.emit("success")
                     return
                 if (len(data)==0):
                     return

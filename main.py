@@ -6,7 +6,7 @@ import pyqtgraph as pg
 import random
 import os
 import sys
-from data_processing import load_data_csv, calibrate, calibrate_linear, load_data_global, values, cal_values
+from data_processing import load_data_csv, save_data_csv
 import blue
 import threading
 
@@ -27,6 +27,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.blue = blue.Blue(self)
         self.blue.signals.statusChanged.connect(self.setConnectionStatus)
         self.blue.signals.dataUpdated.connect(self.dataFromBluetoothArrived)
+        self.blue.signals.dataStreamFinished.connect(self.dataStreamFinished)
+
+        self.dataConnector  = None
+        self.finishedConnector = None
 
         self.sweepTab = SweepTab(self)
         self.calibrationTab = CalibrationTab(self)        
@@ -48,6 +52,14 @@ class MainWindow(QtWidgets.QMainWindow):
     def dataFromBluetoothArrived(self, data):
         if (self.dataConnector is not None):
             self.dataConnector(data)
+
+    # defines what to do after datastream is finished
+    def setFinishedConnector(self, finishedConnector):
+        self.finishedConnector = finishedConnector
+
+    def dataStreamFinished(self, msg):
+        if (self.finishedConnector is not None):
+            self.finishedConnector(msg)
 
     def setConnectionStatus(self, status):
         if status=='connected':

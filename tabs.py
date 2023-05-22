@@ -6,7 +6,7 @@ import pyqtgraph as pg
 import random
 import threading
 
-from data_processing import load_data_csv, calibrate, calibrate_linear, load_data_global, values, cal_values
+from data_processing import *
 
 # Extra separate window for graph
 class GraphWindow(QtWidgets.QMainWindow):
@@ -32,15 +32,19 @@ class GraphHandler:
         self.clear()
 
     def plot(self, x, y, name):
-        pen = pg.mkPen(color=(random.random()*255, random.random()*255, random.random()*255), width=3)
+        if name=="short_ref" or name=="match_ref":
+            plot_color = (0,0,0)
+        else:
+            plot_color=(random.random()*255, random.random()*255, random.random()*255)
+        pen = pg.mkPen(color=plot_color, width=3)
         plotLine = self.graphwidget.plot(x, y, pen=pen, name=name)
         self.plotLines.append(plotLine)
 
     def clear(self):
         self.graphwidget.clear()
         self.plotLines = []
-        self.plot(cal_short[0], cal_short[1], "short")
-        self.plot(cal_match[0], cal_match[1], "match")
+        self.plot(cal_short[0], cal_short[1], "short_ref")
+        self.plot(cal_match[0], cal_match[1], "match_ref")
 
     def init_plot(self):
         self.graphwidget.setBackground('w')
@@ -50,8 +54,10 @@ class GraphHandler:
         self.graphwidget.setLabel('bottom', 'freq [MHz]', **styles)
         self.graphwidget.addLegend()
 
-    def createNewPlotLine(self):
-        self.plot([],[], str(len(self.plotLines)))
+    def createNewPlotLine(self, name=None):
+        if name is None:
+            name = str(len(self.plotLines))
+        self.plot([],[], name)
         self.raw_buffer = ""
         self.buff_index = 0
         self.data_x = []
@@ -171,7 +177,6 @@ class SweepTab:
         return from_int, to_int, step_int, pwr_int
 
     def start_data_reception(self):
-        #self.index = 0
         self.mw.setDataConnector(self.graph.newDataArrived)
         self.graph.createNewPlotLine()
         bt_thread = threading.Thread(target=self.blue.data_reception_cycle, args=(), daemon=True)
@@ -188,19 +193,88 @@ class CalibrationTab:
         self.mw.calibrateShortButton.clicked.connect(self.calibrate_short_button)
         self.mw.calibrateMatchButton.clicked.connect(self.calibrate_match_button)
         self.mw.testMeasureButton.clicked.connect(self.test_measure_button)
+        self.mw.comboBox_3.currentTextChanged.connect(self.combotextChanged)
+        self.mw.tabWidget.currentChanged.connect(self.tab_changed)
+
+        self.update_cal_data()
         #self.mw.clearButton.clicked.connect(self.clearGraphClicked)
 
         #self.blue.signals.dataUpdated.connect(self.graph.updateData)
 
     def calibrate_short_button(self):
-        print("calibrateshort")
+        # from and to frequency
+        cal_type = "short"
+        from_f = 25
+        to_f = 2700
+        step_f = 100
+        pwr_int = int(self.mw.comboBox_3.currentText()[0])
+        command = "AMS_SWEEP(" + str(from_f) + ", " + str(to_f) + ", " + str(step_f) + "," + str(pwr_int) + ")"
+        self.mw.msgLabel.setText("Command '" + command + "' sent.")
+        if (self.blue.isConnected()):
+            self.mw.setFinishedConnector(self.calibration_finished)
+            self.cal_next_type = cal_type
+            self.cal_next_pwr = str(pwr_int)
+            delete_cal_data(cal_type, str(pwr_int))
+            self.graph.clear()
+            self.blue.send_message(command)
+            self.start_data_reception(cal_type + "_" +str(pwr_int))
+        else:
+            self.mw.msgLabel.setText("Not connected to AMS ")
 
     def calibrate_match_button(self):
-        print("calibratmatch")
+        # from and to frequency
+        cal_type = "match"
+        from_f = 25
+        to_f = 2700
+        step_f = 100
+        pwr_int = int(self.mw.comboBox_3.currentText()[0])
+        command = "AMS_SWEEP(" + str(from_f) + ", " + str(to_f) + ", " + str(step_f) + "," + str(pwr_int) + ")"
+        self.mw.msgLabel.setText("Command '" + command + "' sent.")
+        if (self.blue.isConnected()):
+            self.mw.setFinishedConnector(self.calibration_finished)
+            self.cal_next_type = cal_type
+            self.cal_next_pwr = str(pwr_int)
+            delete_cal_data(cal_type, str(pwr_int))
+            self.graph.clear()
+            self.blue.send_message(command)
+            self.start_data_reception(cal_type + "_" +str(pwr_int))
+        else:
+            self.mw.msgLabel.setText("Not connected to AMS ")
 
     def test_measure_button(self):
         print("test_measure")
+
+    def start_data_reception(self, name=None):
+        self.mw.setDataConnector(self.graph.newDataArrived)
+        self.graph.createNewPlotLine(name)
+        bt_thread = threading.Thread(target=self.blue.data_reception_cycle, args=(), daemon=True)
+        bt_thread.start()
+
+    def calibration_finished(self, msg):
+        # when calibration is finished save all data to file
+        cal_data = self.graph.plotLines[-1].getData()
+        print(self.graph.plotLines[-1].getData())
+        save_cal_data(self.cal_next_type, self.cal_next_pwr, cal_data)
+        #save_data_csv("cal_short.csv", cal_data)
+
+    def combotextChanged(self):
+        self.update_cal_data()
+
+    def update_cal_data(self):
+        pwr_str = self.mw.comboBox_3.currentText()[0]
+        short_cal_data = get_cal_data("short", pwr_str)
+        match_cal_data = get_cal_data("match", pwr_str)
+        self.graph.clear()
+        if (short_cal_data):
+            self.graph.plot(short_cal_data[0], short_cal_data[1], "short_" + get_pwrtext(pwr_str))
+        if (match_cal_data):
+            self.graph.plot(match_cal_data[0], match_cal_data[1], "match_" + get_pwrtext(pwr_str))
+    
+    def tab_changed(self):
+        # 4 is tab index of calibration tab
+        if (self.mw.tabWidget.currentIndex() == 4):
+            self.update_cal_data()
     
 
-cal_short = load_data_csv("calibration_short.csv")
-cal_match = load_data_csv("calibration_match.csv")
+cal_short = load_data_manual_csv("calibration_short.csv")
+cal_match = load_data_manual_csv("calibration_match.csv")
