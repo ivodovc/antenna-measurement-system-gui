@@ -151,8 +151,9 @@ def calibrate_linear():
 
 # get reflection coefficient
 def get_RC(freq, ADC_reading, pwr_level):
-    short_data = get_cal_data("short", pwr_level)
-    match_data = get_cal_data("match", pwr_level)
+    pwr_txt = str(pwr_level)
+    short_data = get_cal_data("short", pwr_txt)
+    match_data = get_cal_data("match", pwr_txt)
     # get short value at freq
     shot_val_i = short_data[0].index(freq)
     match_val_i = match_data[0].index(freq)
@@ -160,12 +161,18 @@ def get_RC(freq, ADC_reading, pwr_level):
     match_val = match_data[1][match_val_i]
     actual_val = ADC_reading
     # simplest algorithm get linear distance between match_val and short_val
-    ref_coefficient = (actual_val-short_val/match_val-short_val)
+    ref_coefficient = 1-((actual_val-short_val)/(match_val-short_val))
+    if ref_coefficient>1:
+        ref_coefficient = 1
+    if ref_coefficient<0:
+        ref_coefficient = 0
     return ref_coefficient
 
 def get_SWR(freq, ADC_reading, pwr_level):
     rc = get_RC(freq, ADC_reading, pwr_level)
     SWR = (1+rc)/(1-rc)
+    if SWR>20:
+        SWR=20
     return SWR
 
 globalCache = dict()

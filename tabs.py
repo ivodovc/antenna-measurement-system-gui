@@ -22,14 +22,31 @@ class GraphWindow(QtWidgets.QMainWindow):
 # Class to handle graphing data and graphing actions
 class GraphHandler:
     
-    def __init__(self, mainwindow, graphwidget):
+    # display mode could be "default", "refcoef" or "SWR"
+    def __init__(self, mainwindow, graphwidget, display_mode="default"):
         self.mainwindow = mainwindow
         self.graphwidget = graphwidget
+        self.set_new_display_mode("SWR", 4)
         self.init_plot()
         self.graphwidgetgeometry = self.graphwidget.frameGeometry()
         self.plotLines = []
         self.data_x, self.data_y = [],[]
         self.clear()
+
+    def set_new_display_mode(self, display_mode, pwr_level):
+        allowed = ["default", "refcoef", "SWR"]
+        self.pwr_level = pwr_level
+        if (display_mode in allowed):
+            self.display_mode = display_mode
+            if (self.display_mode=="refcoef"):
+                self.y_fun = get_RC
+            elif (self.display_mode=="SWR"):
+                self.y_fun = get_SWR
+            else:
+                # return plain simple ADC reading
+                self.y_fun = lambda freq, ADC, pwr_level: ADC
+        else:
+            self.display_mode = "default"
 
     def plot(self, x, y, name):
         if name=="short_ref" or name=="match_ref":
@@ -43,8 +60,25 @@ class GraphHandler:
     def clear(self):
         self.graphwidget.clear()
         self.plotLines = []
-        self.plot(cal_short[0], cal_short[1], "short_ref")
-        self.plot(cal_match[0], cal_match[1], "match_ref")
+        self.draw_reference_lines()
+
+    def draw_reference_lines(self):
+        cal_short_y_values = []
+        cal_match_y_values = []
+        for i in range(len(cal_short[0])):
+            freq = cal_short[0][i]
+            adc = cal_short[1][i]
+            y = self.y_fun(freq, adc, self.pwr_level)
+            cal_short_y_values.append(y)
+        for i in range(len(cal_match[0])):
+            freq = cal_match[0][i]
+            adc = cal_match[1][i]
+            y = self.y_fun(freq, adc, self.pwr_level)
+            cal_match_y_values.append(y)
+        self.plot(cal_short[0], cal_short_y_values, "short_ref")
+        self.plot(cal_match[0], cal_match_y_values, "match_ref")
+        #self.plot(cal_short[0], cal_short[1], "short_ref")
+        #self.plot(cal_match[0], cal_match[1], "match_ref")
 
     def init_plot(self):
         self.graphwidget.setBackground('w')
@@ -77,8 +111,14 @@ class GraphHandler:
 
     def newDataArrived(self, data):
         fx, fy = self.split_raw_data(data)
+        fy_disp = []
+        for i in range(len(fx)):
+            freq = fx[i]
+            adc_y = fy[i]
+            y_display = self.y_fun(freq, adc_y, self.pwr_level)
+            fy_disp.append(y_display)
         self.data_x += fx
-        self.data_y += fy
+        self.data_y += fy_disp
         self.plotLines[-1].setData(self.data_x, self.data_y)
 
     def split_raw_data(self, data):
@@ -206,7 +246,7 @@ class CalibrationTab:
         cal_type = "short"
         from_f = 25
         to_f = 2700
-        step_f = 100
+        step_f = 1
         pwr_int = int(self.mw.comboBox_3.currentText()[0])
         command = "AMS_SWEEP(" + str(from_f) + ", " + str(to_f) + ", " + str(step_f) + "," + str(pwr_int) + ")"
         self.mw.msgLabel.setText("Command '" + command + "' sent.")
@@ -226,7 +266,7 @@ class CalibrationTab:
         cal_type = "match"
         from_f = 25
         to_f = 2700
-        step_f = 100
+        step_f = 1
         pwr_int = int(self.mw.comboBox_3.currentText()[0])
         command = "AMS_SWEEP(" + str(from_f) + ", " + str(to_f) + ", " + str(step_f) + "," + str(pwr_int) + ")"
         self.mw.msgLabel.setText("Command '" + command + "' sent.")
