@@ -121,6 +121,38 @@ class GraphHandler:
         self.data_y += fy_disp
         self.plotLines[-1].setData(self.data_x, self.data_y)
 
+    def prepareForContTracing(self):
+        self.index = 0
+        self.x, self.y = [],[]
+        self.i = None
+        self.raw_buffer = ""
+        self.buff_index = 0
+
+    def newDataArrivedCont(self, data):
+        fx,fy = self.split_raw_data(data)
+        for index in range(len(fx)):
+            x = fx[index] #frequency
+            adc_y = fy[index]
+            y = self.y_fun(x, adc_y, self.pwr_level)
+            #y = fy[index]
+            if (self.i is None):
+                self.x.append(x)
+                self.y.append(y)
+                self.i=0
+            else:
+                last_x = self.x[self.i]
+                if x<last_x:
+                    self.i = 0
+                else:
+                    self.i+=1
+                if (self.i < len(self.x)):
+                    self.x[self.i] = x
+                    self.y[self.i] = y
+                else:
+                    self.x.append(x)
+                    self.y.append(y)
+        self.plotLines[-1].setData(self.x, self.y)
+
     def split_raw_data(self, data):
         self.raw_buffer += data
         found_datapoints_x = []
@@ -151,19 +183,23 @@ class SweepTab:
         self.blue = mainwindow.blue
 
         self.graph = GraphHandler(self.mw, self.mw.sweepGraphWidget)
-        
-        self.mw.saveButton.clicked.connect(self.saveButtonClicked)
+
         self.mw.measButton.clicked.connect(self.measButtonClicked)
         self.mw.newWindowButton.clicked.connect(self.newWindowButtonClicked)
         self.mw.clearButton.clicked.connect(self.clearGraphClicked)
-
-    def saveButtonClicked(self):
-        print("Save Clicked")
+        self.mw.sweepStopButton.clicked.connect(self.mw.sendStop)
 
     def clearGraphClicked(self):
         self.graph.clear()
 
     def measButtonClicked(self):
+        if (self.mw.singleRadioButton.isChecked()):
+            self.startNormalSweep()
+        elif (self.mw.contRadioButton.isChecked()):
+            print("Continuous")
+            self.startContSweep()
+        
+    def startContSweep(self):
         # get params
         parsed_args = self.getSweepInputs()
         if parsed_args is not None:
@@ -171,6 +207,24 @@ class SweepTab:
         else:
             #bad parsing
             return
+        self.graph.pwr_level = pwr_int
+        command = "AMS_SWEEP_CONT(" + str(from_int) + ", " + str(to_int) + ", " + str(step_int) + "," + str(pwr_int) + ")"
+        self.mw.msgLabel.setText("Command '" + command + "' sent.")
+        if (self.blue.isConnected()):
+            self.blue.send_message(command)
+            self.start_cont_data_reception()
+        else:
+            self.mw.msgLabel.setText("Not connected to AMS ")
+
+    def startNormalSweep(self):
+        # get params
+        parsed_args = self.getSweepInputs()
+        if parsed_args is not None:
+            from_int, to_int, step_int, pwr_int = parsed_args
+        else:
+            #bad parsing
+            return
+        self.graph.pwr_level = pwr_int
         command = "AMS_SWEEP(" + str(from_int) + ", " + str(to_int) + ", " + str(step_int) + "," + str(pwr_int) + ")"
         self.mw.msgLabel.setText("Command '" + command + "' sent.")
         if (self.blue.isConnected()):
@@ -216,6 +270,13 @@ class SweepTab:
             return
         return from_int, to_int, step_int, pwr_int
 
+    def start_cont_data_reception(self):
+        self.graph.prepareForContTracing()
+        self.mw.setDataConnector(self.graph.newDataArrivedCont)
+        self.graph.createNewPlotLine()
+        bt_thread = threading.Thread(target=self.blue.data_reception_cycle, args=(), daemon=True)
+        bt_thread.start()
+
     def start_data_reception(self):
         self.mw.setDataConnector(self.graph.newDataArrived)
         self.graph.createNewPlotLine()
@@ -234,7 +295,6 @@ class CalibrationTab:
         self.mw.calibrateMatchButton.clicked.connect(self.calibrate_match_button)
         self.mw.testMeasureButton.clicked.connect(self.test_measure_button)
         self.mw.comboBox_3.currentTextChanged.connect(self.combotextChanged)
-        self.mw.tabWidget.currentChanged.connect(self.tab_changed)
 
         self.update_cal_data()
         #self.mw.clearButton.clicked.connect(self.clearGraphClicked)
@@ -282,7 +342,23 @@ class CalibrationTab:
             self.mw.msgLabel.setText("Not connected to AMS ")
 
     def test_measure_button(self):
-        print("test_measure")
+        # from and to frequency
+        print("CALLING")
+        cal_type = "none"
+        from_f = 25
+        to_f = 2700
+        step_f = 1
+        pwr_int = int(self.mw.comboBox_3.currentText()[0])
+        command = "AMS_SWEEP(" + str(from_f) + ", " + str(to_f) + ", " + str(step_f) + "," + str(pwr_int) + ")"
+        self.mw.msgLabel.setText("Command '" + command + "' sent.")
+        if (self.blue.isConnected()):
+            self.cal_next_type = cal_type
+            self.cal_next_pwr = str(pwr_int)
+            self.blue.send_message(command)
+            self.graph.clear()
+            self.start_data_reception("testline")
+        else:
+            self.mw.msgLabel.setText("Not connected to AMS ")
 
     def start_data_reception(self, name=None):
         self.mw.setDataConnector(self.graph.newDataArrived)
@@ -295,7 +371,8 @@ class CalibrationTab:
         cal_data = self.graph.plotLines[-1].getData()
         print(self.graph.plotLines[-1].getData())
         save_cal_data(self.cal_next_type, self.cal_next_pwr, cal_data)
-        #save_data_csv("cal_short.csv", cal_data)
+        # to prevent unvanted overwrites
+        self.mw.setFinishedConnector(function())
 
     def combotextChanged(self):
         self.update_cal_data()
@@ -309,12 +386,29 @@ class CalibrationTab:
             self.graph.plot(short_cal_data[0], short_cal_data[1], "short_" + get_pwrtext(pwr_str))
         if (match_cal_data):
             self.graph.plot(match_cal_data[0], match_cal_data[1], "match_" + get_pwrtext(pwr_str))
-    
-    def tab_changed(self):
-        # 4 is tab index of calibration tab
-        if (self.mw.tabWidget.currentIndex() == 4):
-            self.update_cal_data()
-    
+
+class SingleTab:
+
+    def __init__(self, mainwindow):
+        self.mw = mainwindow
+        self.blue = mainwindow.blue
+        
+        self.mw.singleStartButton.clicked.connect(self.start_single)
+        self.mw.singleStopButton.clicked.connect(self.mw.sendStop)
+
+    def start_single(self):
+        # from and to frequency
+        f = int(self.mw.singleFreqEdit.text())
+        if f<25 or f>6000:
+            # invalid freq
+            return
+        pwr_int = int(self.mw.comboBox_3.currentText()[0])
+        command = "AMS_SINGLE(" + str(f) + ", " + str(pwr_int) + ")"
+        self.mw.msgLabel.setText("Command '" + command + "' sent.")
+        if (self.blue.isConnected()):
+            self.blue.send_message(command)
+        else:
+            self.mw.msgLabel.setText("Not connected to AMS ")
 
 cal_short = load_data_manual_csv("calibration_short.csv")
 cal_match = load_data_manual_csv("calibration_match.csv")

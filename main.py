@@ -11,7 +11,7 @@ import blue
 import threading
 
 
-from tabs import SweepTab, CalibrationTab
+from tabs import SweepTab, CalibrationTab, SingleTab
 
 
 
@@ -33,8 +33,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.finishedConnector = None
 
         self.sweepTab = SweepTab(self)
-        self.calibrationTab = CalibrationTab(self)        
-        self.singleFreq = SingleFreqHandler(self)
+        self.calibrationTab = CalibrationTab(self)
+        self.singleTab = SingleTab(self)
 
         #self.plot_all_files()
         
@@ -52,6 +52,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def dataFromBluetoothArrived(self, data):
         if (self.dataConnector is not None):
             self.dataConnector(data)
+
+    # defines where to send data from bluetooth
+    # dataConnector is a function
+    def setContDataConnector(self, contDataConnector):
+        self.setContDataConnector = contDataConnector
+
+    def contDataFromBluetoothArrived(self, data):
+        if (self.setContDataConnector is not None):
+            self.contDataConnector(data)
+
 
     # defines what to do after datastream is finished
     def setFinishedConnector(self, finishedConnector):
@@ -96,98 +106,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 }
         '''
 
-class SingleFreqHandler():
-    
-
-    def __init__(self, mainwindow):
-        self.mainwindow = mainwindow
-        self.g = mainwindow.singleFreqGraph
-        self.g.setBackground('w')
-        self.blue = mainwindow.blue
-
-        self.x, self.y, self.i = [], [], 0
-
-        self.mainwindow.startButton.clicked.connect(self.startButtonClicked)
-        self.mainwindow.stopButton.clicked.connect(self.stopButtonClicked)
-        self.blue.signals.singleDataUpdated.connect(self.update)
-        pen = pg.mkPen(color=(random.random()*255, random.random()*255, random.random()*255), width=3)
-        self.plotLine = self.g.plot([], [], pen=pen, name="Continuous Sweep")
-        shortpen = pg.mkPen(color=(0,0,255)
-        , width=3)
-        #self.g.plot(cal_short[0], cal_short[1], pen=shortpen, name="Short")
-        matchpen = pg.mkPen(color=(255,0,0), width=3)
-        #self.g.plot(cal_match[0], cal_match[1], pen=matchpen, name="Match")
-
-    def start_data_reception(self):
-        self.index = 0
-        self.x, self.y = [],[]
-        self.i = None
-        self.plotLine.clear()
-        self.raw_buffer = ""
-        self.buff_index = 0
-        bt_thread = threading.Thread(target=self.blue.data_reception_cycle2, args=(self.blue.signals.singleDataUpdated,), daemon=True)
-        bt_thread.start()
-
-    def startButtonClicked(self):
-        f = int(self.mainwindow.singlefreqEdit.text())
-        step = int(self.mainwindow.singleStepEdit.text())
-        command = "AMS_SINGLE(" + str(f) + ", " + str(step) + ")"
-        if (self.blue.isConnected()):
-            self.blue.send_message(command)
-            self.start_data_reception()
-        else:
-            self.msgLabel.setText("Not connected to AMS ")
-    
-    def stopButtonClicked(self):
+    def sendStop(self):
         command = "AMS_STOP()"
         if (self.blue.isConnected()):
             self.blue.send_message(command)
         else:
             self.msgLabel.setText("Not connected to AMS ")
-
-    def update(self, data):
-        print(self.x, self.y)
-        fx,fy = self.split_raw_data(data)
-        for index in range(len(fx)):
-            x = fx[index]
-            y = fy[index]
-            if (self.i is None):
-                self.x.append(x)
-                self.y.append(y)
-                self.i=0
-            else:
-                last_x = self.x[self.i]
-                if x<last_x:
-                    self.i = 0
-                else:
-                    self.i+=1
-                if (self.i < len(self.x)):
-                    self.x[self.i] = x
-                    self.y[self.i] = y
-                else:
-                    self.x.append(x)
-                    self.y.append(y)
-        self.plotLine.setData(self.x, self.y)
-
-
-    def split_raw_data(self, data):
-        self.raw_buffer += data
-        found_datapoints_x = []
-        found_datapoints_y = []
-        while self.buff_index < len(self.raw_buffer):
-            c = self.raw_buffer[self.buff_index]
-            if (c=="}"):
-                opening = self.raw_buffer.rfind("{", 0, self.buff_index)
-                x,y = self.raw_buffer[opening+1: self.buff_index].split(",")
-                x_int, y_int = int(x), int(y)
-                found_datapoints_x.append(x_int)
-                found_datapoints_y.append(y_int)
-                self.raw_buffer = self.raw_buffer[self.buff_index+1:]
-                self.buff_index=0
-            else:
-                self.buff_index+=1
-        print("returning:", found_datapoints_x, found_datapoints_y)
-        return found_datapoints_x, found_datapoints_y
 
 # from https://stackoverflow.com/questions/1432924/python-change-the-scripts-working-directory-to-the-scripts-own-directory
 os.chdir(sys.path[0])
@@ -195,9 +119,6 @@ os.chdir(sys.path[0])
 random.seed()
 app = QtWidgets.QApplication([])
 
-#load_data_global()
-#calibrate_linear()
-#print(cal_values)
 window = MainWindow()
 window.show()
 

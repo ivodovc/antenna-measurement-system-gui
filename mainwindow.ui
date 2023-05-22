@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="Tab1">
      <attribute name="title">
@@ -35,8 +35,8 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>501</width>
-        <height>102</height>
+        <width>351</width>
+        <height>111</height>
        </rect>
       </property>
       <property name="styleSheet">
@@ -57,10 +57,13 @@ border-color: rgb(0, 0, 0);}</string>
        <property name="bottomMargin">
         <number>5</number>
        </property>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label">
+       <item row="5" column="0" colspan="5">
+        <widget class="QLabel" name="msgLabel">
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
          <property name="text">
-          <string>From [MHz]</string>
+          <string>Message:</string>
          </property>
         </widget>
        </item>
@@ -71,27 +74,17 @@ border-color: rgb(0, 0, 0);}</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="4" rowspan="2">
-        <widget class="QPushButton" name="measButton">
-         <property name="text">
-          <string>Measure</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0" colspan="4">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Linear frequency sweep configuration (27-2700 MHz)</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
        <item row="3" column="1">
         <widget class="QLineEdit" name="stepEdit">
          <property name="text">
           <string>10</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QLabel" name="label_27">
+         <property name="text">
+          <string>show</string>
          </property>
         </widget>
        </item>
@@ -111,29 +104,18 @@ border-color: rgb(0, 0, 0);}</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="2">
-        <widget class="QLabel" name="label_3">
+       <item row="1" column="0" colspan="4">
+        <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>To [MHz]</string>
+          <string>Linear frequency sweep configuration (27-2700 MHz)</string>
          </property>
-        </widget>
-       </item>
-       <item row="5" column="0" colspan="5">
-        <widget class="QLabel" name="msgLabel">
-         <property name="text">
-          <string>Message:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Step [MHz]</string>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
        <item row="3" column="3">
-        <widget class="QComboBox" name="comboBox_4">
+        <widget class="QComboBox" name="show_combobox">
          <item>
           <property name="text">
            <string>ADC_reading</string>
@@ -151,10 +133,24 @@ border-color: rgb(0, 0, 0);}</string>
          </item>
         </widget>
        </item>
-       <item row="3" column="2">
-        <widget class="QLabel" name="label_27">
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>show_option</string>
+          <string>Step [MHz]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>From [MHz]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>To [MHz]</string>
          </property>
         </widget>
        </item>
@@ -179,9 +175,9 @@ border-color: rgb(0, 0, 0);}</string>
      <widget class="QWidget" name="PLLsettingsWidget" native="true">
       <property name="geometry">
        <rect>
-        <x>520</x>
+        <x>500</x>
         <y>10</y>
-        <width>91</width>
+        <width>111</width>
         <height>71</height>
        </rect>
       </property>
@@ -246,7 +242,7 @@ Power</string>
        <rect>
         <x>620</x>
         <y>10</y>
-        <width>151</width>
+        <width>131</width>
         <height>61</height>
        </rect>
       </property>
@@ -291,7 +287,7 @@ border-color: rgb(0, 0, 0);
      <widget class="QPushButton" name="newWindowButton">
       <property name="geometry">
        <rect>
-        <x>600</x>
+        <x>630</x>
         <y>90</y>
         <width>131</width>
         <height>31</height>
@@ -304,7 +300,7 @@ border-color: rgb(0, 0, 0);
      <widget class="QPushButton" name="clearButton">
       <property name="geometry">
        <rect>
-        <x>520</x>
+        <x>530</x>
         <y>90</y>
         <width>81</width>
         <height>31</height>
@@ -314,157 +310,35 @@ border-color: rgb(0, 0, 0);
        <string>Clear</string>
       </property>
      </widget>
-    </widget>
-    <widget class="QWidget" name="SingleFreqTab">
-     <attribute name="title">
-      <string>Continuous</string>
-     </attribute>
-     <widget class="QWidget" name="gridWidget_2" native="true">
+     <widget class="QPushButton" name="sweepStopButton">
       <property name="geometry">
        <rect>
-        <x>50</x>
-        <y>20</y>
-        <width>351</width>
-        <height>102</height>
+        <x>450</x>
+        <y>90</y>
+        <width>71</width>
+        <height>31</height>
        </rect>
       </property>
-      <property name="styleSheet">
-       <string notr="true">QWidget#gridWidget_2{
-border-radius: 5px; border: 1px solid white;
-border-color: rgb(0, 0, 0);}</string>
+      <property name="text">
+       <string>Stop</string>
       </property>
-      <layout class="QGridLayout" name="gridLayout_4">
-       <property name="leftMargin">
-        <number>5</number>
-       </property>
-       <property name="topMargin">
-        <number>5</number>
-       </property>
-       <property name="rightMargin">
-        <number>5</number>
-       </property>
-       <property name="bottomMargin">
-        <number>5</number>
-       </property>
-       <item row="7" column="0" colspan="4">
-        <widget class="QLabel" name="msgLabel_2">
-         <property name="text">
-          <string>Message:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="2">
-        <widget class="QPushButton" name="startButton">
-         <property name="text">
-          <string>Start</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Frequency [MHz]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLineEdit" name="singlefreqEdit">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="cursor">
-          <cursorShape>IBeamCursor</cursorShape>
-         </property>
-         <property name="inputMethodHints">
-          <set>Qt::ImhDigitsOnly</set>
-         </property>
-         <property name="text">
-          <string>500</string>
-         </property>
-         <property name="clearButtonEnabled">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0" colspan="3">
-        <widget class="QLabel" name="label_16">
-         <property name="text">
-          <string>Singl frequency measurement</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="2">
-        <widget class="QPushButton" name="stopButton">
-         <property name="text">
-          <string>Stop</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_84">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Span [MHz]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QLineEdit" name="singleStepEdit">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="cursor">
-          <cursorShape>IBeamCursor</cursorShape>
-         </property>
-         <property name="inputMethodHints">
-          <set>Qt::ImhDigitsOnly</set>
-         </property>
-         <property name="text">
-          <string>10</string>
-         </property>
-         <property name="clearButtonEnabled">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
      </widget>
-     <widget class="QWidget" name="PLLsettingsWidget_2" native="true">
+     <widget class="QWidget" name="radioButtonWidget" native="true">
       <property name="geometry">
        <rect>
-        <x>410</x>
-        <y>20</y>
-        <width>91</width>
+        <x>370</x>
+        <y>10</y>
+        <width>121</width>
         <height>71</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QWidget#PLLsettingsWidget_2{
+       <string notr="true">QWidget#radioButtonWidget{
 border-radius: 5px; border: 1px solid white;
 border-color: rgb(0, 0, 0);
 }</string>
       </property>
-      <layout class="QGridLayout" name="gridLayout_8">
+      <layout class="QGridLayout" name="gridLayout_13">
        <property name="leftMargin">
         <number>5</number>
        </property>
@@ -477,113 +351,37 @@ border-color: rgb(0, 0, 0);
        <property name="bottomMargin">
         <number>5</number>
        </property>
-       <item row="1" column="0">
-        <widget class="QComboBox" name="comboBox_2">
-         <item>
-          <property name="text">
-           <string>4 (5 dBm)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>3 (2 dBm)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>2 (-1 dBm)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>1 (-4 dBm)</string>
-          </property>
-         </item>
-        </widget>
-       </item>
        <item row="0" column="0">
-        <widget class="QLabel" name="label_18">
+        <widget class="QRadioButton" name="singleRadioButton">
          <property name="text">
-          <string>PLL Output 
-Power</string>
+          <string>Single</string>
          </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QRadioButton" name="contRadioButton">
+         <property name="text">
+          <string>Continuous</string>
          </property>
         </widget>
        </item>
       </layout>
      </widget>
-     <widget class="PlotWidget" name="singleFreqGraph" native="true">
+     <widget class="QPushButton" name="measButton">
       <property name="geometry">
        <rect>
-        <x>40</x>
-        <y>140</y>
-        <width>681</width>
-        <height>381</height>
+        <x>370</x>
+        <y>90</y>
+        <width>71</width>
+        <height>31</height>
        </rect>
       </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgb(227, 227, 227);</string>
+      <property name="text">
+       <string>Start</string>
       </property>
-     </widget>
-     <widget class="QWidget" name="readingWidget" native="true">
-      <property name="geometry">
-       <rect>
-        <x>510</x>
-        <y>20</y>
-        <width>211</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QWidget#readingWidget{
-border-radius: 5px; border: 1px solid white;
-border-color: rgb(0, 0, 0);
-}</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_9">
-       <property name="leftMargin">
-        <number>15</number>
-       </property>
-       <property name="topMargin">
-        <number>15</number>
-       </property>
-       <property name="rightMargin">
-        <number>15</number>
-       </property>
-       <property name="bottomMargin">
-        <number>15</number>
-       </property>
-       <item row="2" column="1">
-        <widget class="QLabel" name="label_19">
-         <property name="text">
-          <string>ADC Reading:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <widget class="QLabel" name="label_22">
-         <property name="text">
-          <string>-</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLabel" name="label_20">
-         <property name="text">
-          <string>Ref. Coefficient:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="2">
-        <widget class="QLabel" name="label_21">
-         <property name="text">
-          <string>-</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
      </widget>
     </widget>
     <widget class="QWidget" name="SingleFreq2Tab">
@@ -591,10 +389,13 @@ border-color: rgb(0, 0, 0);
       <string>Single Freq</string>
      </attribute>
      <widget class="QWidget" name="readingWidget_4" native="true">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="geometry">
        <rect>
-        <x>401</x>
-        <y>131</y>
+        <x>390</x>
+        <y>150</y>
         <width>211</width>
         <height>61</height>
        </rect>
@@ -663,7 +464,24 @@ border-color: rgb(0, 0, 0);}</string>
        <property name="bottomMargin">
         <number>5</number>
        </property>
-       <item row="5" column="0" colspan="4">
+       <item row="1" column="0" colspan="3">
+        <widget class="QLabel" name="label_81">
+         <property name="text">
+          <string>Singl frequency generation</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QPushButton" name="singleStartButton">
+         <property name="text">
+          <string>SET FREQ</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" colspan="4">
         <widget class="QLabel" name="msgLabel_10">
          <property name="text">
           <string>Message:</string>
@@ -671,7 +489,7 @@ border-color: rgb(0, 0, 0);}</string>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QLineEdit" name="fromEdit_10">
+        <widget class="QLineEdit" name="singleFreqEdit">
          <property name="cursor">
           <cursorShape>IBeamCursor</cursorShape>
          </property>
@@ -686,27 +504,10 @@ border-color: rgb(0, 0, 0);}</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0" colspan="3">
-        <widget class="QLabel" name="label_81">
-         <property name="text">
-          <string>Singl frequency measurement</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_82">
          <property name="text">
           <string>Frequency [MHz]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <widget class="QPushButton" name="measButton_7">
-         <property name="text">
-          <string>Measure</string>
          </property>
         </widget>
        </item>
@@ -741,7 +542,7 @@ border-color: rgb(0, 0, 0);
         <number>5</number>
        </property>
        <item row="1" column="0">
-        <widget class="QComboBox" name="comboBox_10">
+        <widget class="QComboBox" name="singleComboBox">
          <item>
           <property name="text">
            <string>4 (5 dBm)</string>
@@ -788,6 +589,20 @@ Power</string>
       </property>
       <property name="styleSheet">
        <string notr="true">background-color: rgb(227, 227, 227);</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="singleStopButton">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>90</y>
+        <width>111</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Stop
+(Disables RFOUT)</string>
       </property>
      </widget>
     </widget>
@@ -928,14 +743,28 @@ border-color: rgb(0, 0, 0);
      <widget class="QPushButton" name="pushButton_2">
       <property name="geometry">
        <rect>
-        <x>100</x>
+        <x>30</x>
         <y>260</y>
-        <width>101</width>
-        <height>21</height>
+        <width>111</width>
+        <height>41</height>
        </rect>
       </property>
       <property name="text">
        <string>Send</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_3">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>260</y>
+        <width>111</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Stop
+ (Disables RFOUT)</string>
       </property>
      </widget>
     </widget>
