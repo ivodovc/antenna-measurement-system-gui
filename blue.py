@@ -43,7 +43,7 @@ class Blue:
         print("Connection established")
         self.setConnected(True)
         self.s.setblocking(1)
-        self.s.settimeout(0.1) # 100ms timeout
+        self.s.settimeout(1) # 100ms timeout
 
     def send_message(self, message):
         if (self.isConnected()):
