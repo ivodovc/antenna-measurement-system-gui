@@ -171,10 +171,10 @@ def get_RC(freq, ADC_reading, pwr_level):
     # simplest algorithm get linear distance between match_val and short_val
     linear_val = ((actual_val-short_val)/(match_val-short_val))
     ref_coefficient = trend_fun(linear_val)
-    if ref_coefficient>1:
-        ref_coefficient = 1
-    if ref_coefficient<0:
-        ref_coefficient = 0
+    #if ref_coefficient>1:
+    #    ref_coefficient = 1
+    #if ref_coefficient<0:
+    #    ref_coefficient = 0
     return ref_coefficient
 
 def get_SWR(freq, ADC_reading, pwr_level):

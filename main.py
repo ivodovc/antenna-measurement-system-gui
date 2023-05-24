@@ -1,11 +1,16 @@
+import os
+import sys
+# from https://stackoverflow.com/questions/1432924/python-change-the-scripts-working-directory-to-the-scripts-own-directory
+os.chdir(sys.path[0])
+
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import *
 from PyQt6 import uic
 from pyqtgraph import PlotWidget
 import pyqtgraph as pg
 import random
-import os
-import sys
+
+
 from data_processing import load_data_csv, save_data_csv
 import blue
 import threading
@@ -113,8 +118,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.msgLabel.setText("Not connected to AMS ")
 
-# from https://stackoverflow.com/questions/1432924/python-change-the-scripts-working-directory-to-the-scripts-own-directory
-os.chdir(sys.path[0])
+
 
 random.seed()
 app = QtWidgets.QApplication([])
