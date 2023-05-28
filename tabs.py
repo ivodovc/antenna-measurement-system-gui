@@ -29,6 +29,7 @@ class GraphHandler:
         self.set_new_display_mode("default", 4)
         self.init_plot()
         self.graphwidgetgeometry = self.graphwidget.frameGeometry()
+        self.reference_lines = {}
         self.plotLines = []
         self.data_x, self.data_y = [],[]
         self.clear()
@@ -49,11 +50,17 @@ class GraphHandler:
             self.display_mode = "default"
 
     def plot(self, x, y, name):
-        if name=="short_ref" or name=="match_ref":
+        #y_new = []
+        #for a in y:
+        #    y_new.append(-a)
+        if "csv" in name:
             plot_color = (0,0,0)
+            #plot_color=(random.random()*255, random.random()*255, random.random()*255)
+            w = 2
         else:
             plot_color=(random.random()*255, random.random()*255, random.random()*255)
-        pen = pg.mkPen(color=plot_color, width=3)
+            w = 3
+        pen = pg.mkPen(color=plot_color, width=w)
         plotLine = self.graphwidget.plot(x, y, pen=pen, name=name)
         self.plotLines.append(plotLine)
 
@@ -61,8 +68,15 @@ class GraphHandler:
         self.graphwidget.clear()
         self.plotLines = []
         self.draw_reference_lines()
+        self.continuous_points = self.graphwidget.plot([750], [2000], pen=None, symbol='o', symbolSize=5, symbolBrush=('r'))
+        #self.infinite_line = self.graphwidget.infiniteLine(750)
 
     def draw_reference_lines(self):
+        for line in self.reference_lines:
+            data = self.reference_lines[line]
+            self.plot(data[0], data[1], line)
+
+    def draw_reference_lines_old(self):
         cal_short_y_values = []
         cal_match_y_values = []
         for i in range(len(cal_short[0])):
@@ -115,7 +129,7 @@ class GraphHandler:
         for i in range(len(fx)):
             freq = fx[i]
             adc_y = fy[i]
-            y_display = self.y_fun(freq, adc_y, self.pwr_level)
+            y_display = adc_y#self.y_fun(freq, adc_y, self.pwr_level)
             fy_disp.append(y_display)
         self.data_x += fx
         self.data_y += fy_disp
@@ -130,6 +144,8 @@ class GraphHandler:
 
     def newDataArrivedCont(self, data):
         fx,fy = self.split_raw_data(data)
+        if len(fx)>0:
+            self.continuous_points.setData([fx[-1]], [fy[-1]])
         for index in range(len(fx)):
             x = fx[index] #frequency
             adc_y = fy[index]
@@ -162,7 +178,8 @@ class GraphHandler:
             if (c=="}"):
                 opening = self.raw_buffer.rfind("{", 0, self.buff_index)
                 x,y = self.raw_buffer[opening+1: self.buff_index].split(",")
-                x_int, y_int = int(x), int(y)
+                #x_int, y_int = int(x), int(y)
+                x_int, y_int = float(x), float(y)
                 found_datapoints_x.append(x_int)
                 found_datapoints_y.append(y_int)
                 self.raw_buffer = self.raw_buffer[self.buff_index+1:]
@@ -189,6 +206,9 @@ class SweepTab:
         self.mw.clearButton.clicked.connect(self.clearGraphClicked)
         self.mw.sweepStopButton.clicked.connect(self.mw.sendStop)
 
+        self.mw.comboBox.currentTextChanged.connect(self.combotextChanged)
+        self.update_ref_data()
+
     def clearGraphClicked(self):
         self.graph.clear()
 
@@ -196,7 +216,6 @@ class SweepTab:
         if (self.mw.singleRadioButton.isChecked()):
             self.startNormalSweep()
         elif (self.mw.contRadioButton.isChecked()):
-            print("Continuous")
             self.startContSweep()
         
     def startContSweep(self):
@@ -225,7 +244,10 @@ class SweepTab:
             #bad parsing
             return
         self.graph.pwr_level = pwr_int
-        command = "AMS_SWEEP(" + str(from_int) + ", " + str(to_int) + ", " + str(step_int) + "," + str(pwr_int) + ")"
+        if (self.mw.intStepRadioButton.isChecked()):
+            command = "AMS_SWEEP(" + str(from_int) + ", " + str(to_int) + ", " + str(step_int) + "," + str(pwr_int) + ")"
+        elif (self.mw.miniStepRadioButton.isChecked()):
+            command = "AMS_SWEEP_NDIV(" + str(from_int) + ", " + str(to_int) + ", " + str(1) + "," + str(pwr_int) + "," + str(int(1/step_int)) + ")"
         self.mw.msgLabel.setText("Command '" + command + "' sent.")
         if (self.blue.isConnected()):
             self.blue.send_message(command)
@@ -236,18 +258,34 @@ class SweepTab:
     def newWindowButtonClicked(self):
         self.graph.openInNewWindow()
 
+    def get_correct_step(self):
+        if (self.mw.intStepRadioButton.isChecked()):
+            step_int = int(self.mw.stepEdit.text())
+            if (step_int<1):
+                return None
+            else:
+                return step_int
+        elif (self.mw.miniStepRadioButton.isChecked()):
+            step_text = self.mw.step_comboBox.currentText().split()[0]
+            step_unit = self.mw.step_comboBox.currentText().split()[1]
+            step_float = float(step_text)
+            if step_unit == "MHz":
+                return step_float
+            elif step_unit == "kHz":
+                return step_float/1000
+            return None
+
     def getSweepInputs(self):
         from_text = self.mw.fromEdit.text()
         to_text = self.mw.toEdit.text()
-        step_text = self.mw.stepEdit.text()
         pwr_int = int(self.mw.comboBox.currentText()[0]) # first character is power level
 
-        from_int, to_int, step_int = 0,0,0
+        from_int, to_int, step_num = 0,0,0
         # check if params are digits
         try:
             from_int = int(from_text)
             to_int = int(to_text)
-            step_int = int(step_text)
+            step_num = self.get_correct_step()
         except Exception as e:
             print(e)
             self.mw.msgLabel.setText("Input freq Error")
@@ -256,19 +294,19 @@ class SweepTab:
         if (from_int >= to_int):
             self.mw.msgLabel.setText("From frequency should be smaller than To frequency")
             return
-        if (from_int > 6000 or from_int < 25):
+        if (from_int > 6000 or from_int < 24):
             self.mw.msgLabel.setText("From out of range")
             return
         if (to_int > 6000 or to_int < 25):
             self.mw.msgLabel.setText("To out of range")
             return
-        if (step_int >= to_int-from_int):
+        if (step_num >= to_int-from_int):
             self.mw.msgLabel.setText("Step is too big")
             return
-        if (step_int < 1):
-            self.mw.msgLabel.setText("Step is too small")
-            return
-        return from_int, to_int, step_int, pwr_int
+        #if (step_num < 1):
+            #self.mw.msgLabel.setText("Step is too small")
+            #return
+        return from_int, to_int, step_num, pwr_int
 
     def start_cont_data_reception(self):
         self.graph.prepareForContTracing()
@@ -283,6 +321,15 @@ class SweepTab:
         bt_thread = threading.Thread(target=self.blue.data_reception_cycle, args=(), daemon=True)
         bt_thread.start()
 
+    def combotextChanged(self):
+        self.update_ref_data()
+
+    def update_ref_data(self):
+        pwr_str = self.mw.comboBox.currentText()[0]
+        ref = get_all_references_for_pwr(pwr_str)
+        self.graph.reference_lines = ref
+        self.graph.clear()
+
 class CalibrationTab:
     
     def __init__(self, mainwindow):
@@ -294,12 +341,37 @@ class CalibrationTab:
         self.mw.calibrateShortButton.clicked.connect(self.calibrate_short_button)
         self.mw.calibrateMatchButton.clicked.connect(self.calibrate_match_button)
         self.mw.testMeasureButton.clicked.connect(self.test_measure_button)
+        self.mw.calibrateEditButton.clicked.connect(self.calibrate_edit_button)
         self.mw.comboBox_3.currentTextChanged.connect(self.combotextChanged)
 
         self.update_cal_data()
         #self.mw.clearButton.clicked.connect(self.clearGraphClicked)
 
         #self.blue.signals.dataUpdated.connect(self.graph.updateData)
+
+    def calibrate_edit_button(self):
+        # from and to frequency
+        ref_name = self.mw.refnameEdit.text()
+        ref_name = check_filename_available(ref_name, self.mw.comboBox_3.currentText()[0])
+        self.mw.refnameEdit.setText(ref_name)
+        from_text = self.mw.calibFromEdit.text()
+        to_text = self.mw.calibToEdit.text()
+        step_text = self.mw.calibStepEdit.text()
+        from_f = int(from_text)
+        to_f = int(to_text)
+        step_f = int(step_text)
+        pwr_int = int(self.mw.comboBox_3.currentText()[0])
+        command = "AMS_SWEEP(" + str(from_f) + ", " + str(to_f) + ", " + str(step_f) + "," + str(pwr_int) + ")"
+        #self.mw.msgLabel.setText("Command '" + command + "' sent.")
+        if (self.blue.isConnected()):
+            self.mw.setFinishedConnector(self.calibration_finished)
+            self.cal_next_name = ref_name
+            self.cal_next_pwr = str(pwr_int)
+            self.graph.clear()
+            self.blue.send_message(command)
+            self.start_data_reception(ref_name + "_" +str(pwr_int))
+        else:
+            self.mw.msgLabel.setText("Not connected to AMS ")
 
     def calibrate_short_button(self):
         # from and to frequency
@@ -369,23 +441,18 @@ class CalibrationTab:
     def calibration_finished(self, msg):
         # when calibration is finished save all data to file
         cal_data = self.graph.plotLines[-1].getData()
-        print(self.graph.plotLines[-1].getData())
-        save_cal_data(self.cal_next_type, self.cal_next_pwr, cal_data)
-        # to prevent unvanted overwrites
-        self.mw.setFinishedConnector(function())
+        save_reference(self.cal_next_name, self.cal_next_pwr, cal_data)
+        # to prevent unvanted overwrites set empty function
+        self.mw.setFinishedConnector(lambda :None)
 
     def combotextChanged(self):
         self.update_cal_data()
 
     def update_cal_data(self):
         pwr_str = self.mw.comboBox_3.currentText()[0]
-        short_cal_data = get_cal_data("short", pwr_str)
-        match_cal_data = get_cal_data("match", pwr_str)
+        ref = get_all_references_for_pwr(pwr_str)
+        self.graph.reference_lines = ref
         self.graph.clear()
-        if (short_cal_data):
-            self.graph.plot(short_cal_data[0], short_cal_data[1], "short_" + get_pwrtext(pwr_str))
-        if (match_cal_data):
-            self.graph.plot(match_cal_data[0], match_cal_data[1], "match_" + get_pwrtext(pwr_str))
 
 class SingleTab:
 
@@ -402,7 +469,7 @@ class SingleTab:
         if f<25 or f>6000:
             # invalid freq
             return
-        pwr_int = int(self.mw.comboBox_3.currentText()[0])
+        pwr_int = int(self.mw.singleComboBox.currentText()[0])
         command = "AMS_SINGLE(" + str(f) + ", " + str(pwr_int) + ")"
         self.mw.msgLabel.setText("Command '" + command + "' sent.")
         if (self.blue.isConnected()):
@@ -410,5 +477,43 @@ class SingleTab:
         else:
             self.mw.msgLabel.setText("Not connected to AMS ")
 
-cal_short = load_data_manual_csv("calibration_short.csv")
-cal_match = load_data_manual_csv("calibration_match.csv")
+class AdvancedTab:
+
+    def __init__(self, mainwindow):
+        self.mw = mainwindow
+        self.blue = mainwindow.blue
+        
+        self.mw.sendRegistersButton.clicked.connect(self.send_regs)
+        self.mw.stopRegistersButton.clicked.connect(self.mw.sendStop)
+
+    def send_regs(self):
+        # from and to frequency
+        reg0_text = self.mw.reg0Edit.text()
+        reg1_text = self.mw.reg1Edit.text()
+        reg2_text = self.mw.reg2Edit.text()
+        reg3_text = self.mw.reg3Edit.text()
+        reg4_text = self.mw.reg4Edit.text()
+        reg5_text = self.mw.reg5Edit.text()
+        try:
+            reg0_int = int(reg0_text, 16)
+            reg1_int = int(reg1_text, 16)
+            reg2_int = int(reg2_text, 16)
+            reg3_int = int(reg3_text, 16)
+            reg4_int = int(reg4_text, 16)
+            reg5_int = int(reg5_text, 16)
+        except Exception as e:
+            print("Error when parsing register values", e)
+            return
+        command = "AMS_REGISTER(" + reg0_text + ", "  + reg1_text + ", "  + reg2_text + ", "  + reg3_text + ", " + reg4_text + ", "  + reg5_text + ")"  
+        if len(command)>100:
+            print("Command too long when sending registers")
+            return
+        self.mw.msgLabel.setText("Command '" + command + "' sent.")
+        if (self.blue.isConnected()):
+            self.blue.send_message(command)
+        else:
+            self.mw.msgLabel.setText("Not connected to AMS ")
+
+            
+#cal_short = load_data_manual_csv("calibration_short.csv")
+#cal_match = load_data_manual_csv("calibration_match.csv")

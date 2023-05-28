@@ -16,7 +16,7 @@ import blue
 import threading
 
 
-from tabs import SweepTab, CalibrationTab, SingleTab
+from tabs import SweepTab, CalibrationTab, SingleTab, AdvancedTab
 
 
 
@@ -40,6 +40,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sweepTab = SweepTab(self)
         self.calibrationTab = CalibrationTab(self)
         self.singleTab = SingleTab(self)
+        self.advancedTab= AdvancedTab(self)
 
         #self.plot_all_files()
         
@@ -125,5 +126,4 @@ app = QtWidgets.QApplication([])
 
 window = MainWindow()
 window.show()
-
 app.exec()

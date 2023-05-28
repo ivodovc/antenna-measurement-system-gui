@@ -3,31 +3,13 @@ import csv
 from datetime import datetime
 
 DATE_FORMAT = "%d-%m-%Y-%H-%M"
-
-class CalibrationCache():
-
-    def __init__(self):
-        pass
-
-# Load csv raw data reported by stm32
-def load_data_manual_csv(filename):
-    x_vals = []
-    y_vals = []
-    with open(filename, "r") as file:
-        for line in file:
-            x, y = line.split(",")
-            try:
-                x_vals.append(int(x))
-                y_vals.append(int(y))
-            except ValueError as e:
-                    #print("error:", e)
-                    pass
-    return x_vals, y_vals
+SUBFOLDER_PATH="./ref_data/"
 
 # reads data from filename
 def load_data_csv(filename):
     data_x = []
     data_y = []
+    #fullname = SUBFOLDER_PATH + filename
     with open(filename, newline='') as f:
         reader = csv.reader(f)
         for row in reader:
@@ -51,34 +33,6 @@ def save_data_csv(filename, data):
             row = data[0][i], data[1][i]
             writer.writerow(row)
 
-# gets calibration data saved in local files
-# type is either short or match
-# pwr is power level (could be 1,2,3,4)
-def get_cal_data(type, pwr):
-    calibration_id = "cal_" + type + "_" + get_pwrtext(pwr)
-    if calibration_id in globalCache:
-        return globalCache[calibration_id]
-    else:
-        filename = calibration_id + ".csv"
-        if (os.path.isfile(filename)):
-            data = load_data_csv(calibration_id+".csv")
-            globalCache[calibration_id] = data
-            return data
-        else:
-            return None
-
-def save_cal_data(type, pwr, data):
-    calibration_id = "cal_" + type + "_" + get_pwrtext(pwr)
-    # save to dict
-    globalCache[calibration_id] = data
-    # then save to file
-    save_data_csv(calibration_id+".csv", data)
-
-def delete_cal_data(type, pwr):
-    calibration_id = "cal_" + type + "_" + get_pwrtext(pwr)
-    if calibration_id in globalCache:
-        del globalCache[calibration_id]
-
 def get_pwrtext(pwr):
     if pwr=="1":
         return "-4dBm"
@@ -92,14 +46,56 @@ def get_pwrtext(pwr):
         print("Bad pwr in get_pwrtext")
         return None
 
-# gets calibration data saved in local files
-# type is either short or match, pwr is 1,2,3,4 (in string)
-def save_cal_data(type, pwr, data):
+def check_filename_available(filename, pwr):
+    # checks if filename is a valid filename and if there is no other same file
+    if (filename.split(".")[-1] != "csv"):
+        filename += ".csv"
     pwrtext = get_pwrtext(pwr)
-    filename = "cal_" + type + "_" + pwrtext + ".csv"
-    print(filename)
-    save_data_csv(filename, data)
+    if (pwrtext==None):
+        return
+    pwr_subfolder = pwrtext + "/"
+    if (filename in os.listdir(SUBFOLDER_PATH+pwr_subfolder)):
+        # collision
+        #recursion but whatever
+        newname =  "RENAMED_" + filename
+        return check_filename_available(newname, pwr).split(".")[0]
+    else:
+        return filename.split(".")[0]
 
+# return all reference data for specified power
+def get_all_references_for_pwr(pwr):
+    pwrtext = get_pwrtext(pwr)
+    if (pwrtext==None):
+        return
+    pwr_subfolder = pwrtext + "/"
+    full_subfolder = SUBFOLDER_PATH + pwr_subfolder
+    files = os.listdir(full_subfolder)
+    for file in files:
+        # first check if file is csv file
+        extension = file.split(".")[-1]
+        if extension=="csv":
+            if False:#file in globalCache[pwrtext]:
+                # do not load
+                pass
+            else:
+                # need to load file into cache
+                data = load_data_csv(full_subfolder + file)
+                globalCache[pwrtext][file] = data
+    return globalCache[pwrtext]
+
+# saves reference
+def save_reference(refname, pwr, data):
+    pwrtext = get_pwrtext(pwr)
+    if (pwrtext==None):
+        return
+    if (refname==None):
+        return
+    pwr_subfolder = pwrtext + "/"
+    fullname = SUBFOLDER_PATH + pwr_subfolder + refname
+    # if user didnt enter csv after name add csv, otherwise let it be
+    if (refname.split(".")[-1] != "csv"):
+        fullname += ".csv"
+    save_data_csv(fullname, data)
 
 def calibrate():
     #25 az 2400 MHz
@@ -185,3 +181,7 @@ def get_SWR(freq, ADC_reading, pwr_level):
     return SWR
 
 globalCache = dict()
+globalCache = {"5dBm": {},
+               "2dBm": {},
+                "-1dBm": {},
+                "-4dBm": {}}

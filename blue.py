@@ -5,11 +5,13 @@ from PyQt6 import QtGui
 from PyQt6.QtCore import *
 import threading
 
+
 class CustomSignals(QObject):
     statusChanged = pyqtSignal(str)
     dataUpdated = pyqtSignal(str)
     singleDataUpdated = pyqtSignal(str)
     dataStreamFinished = pyqtSignal(str)
+
 
 class Blue:
 
@@ -21,22 +23,25 @@ class Blue:
         self.mainwindow.connectButton.clicked.connect(self.connectButtonAction)
         self.mainwindow.amsversionButton.clicked.connect(self.amsversion)
         self.mainwindow.amshowareyouButton.clicked.connect(self.amshowareyou)
+        self.mainwindow.lowPowerButton.clicked.connect(self.setLowPower)
+        self.mainwindow.wakeUpButton.clicked.connect(self.wakeUp)
+
         self.connected = False
         self.signals = CustomSignals()
-        #print(self.amberStyleSheet)
 
     def connectButtonAction(self):
         self.x = threading.Thread(target=self.connect, args=(), daemon=True)
         self.x.start()
 
     def connect(self):
-        HC06_address = '98:D3:31:90:53:B3' # Server Address
+        # Server Address is set
+        HC06_address = '98:D3:31:90:53:B3'
         port = 1  # HC06 setting
         self.s = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
-        #self.mainwindow.status_widget.setStyleSheet(self.amberStyleSheet)
+        # self.mainwindow.status_widget.setStyleSheet(self.amberStyleSheet)
         self.signals.statusChanged.emit("attempting")
         try:
-            self.s.connect((HC06_address,port))
+            self.s.connect((HC06_address, port))
         except Exception as e:
             print("Bluetooth Connection to HC06 failed", e)
             self.setConnected(False)
@@ -44,7 +49,8 @@ class Blue:
         print("Connection established")
         self.setConnected(True)
         self.s.setblocking(1)
-        self.s.settimeout(1) # 100ms timeout
+        # 1000ms timeout
+        self.s.settimeout(1)
 
     def send_message(self, message):
         if (self.isConnected()):
@@ -63,6 +69,7 @@ class Blue:
                 return
         else:
             return 0
+
     # receives message till termination syombl;
     def receive_message(self):
         received_msg = ""
@@ -73,7 +80,7 @@ class Blue:
                 if ';' in msg:
                     print("Succseful")
                     return received_msg
-                if (len(msg)==0):
+                if (len(msg) == 0):
                     return received_msg
         else:
             return 0
@@ -82,6 +89,9 @@ class Blue:
     # cycle in loop until timeout or ]
     # run in other thread
     def data_reception_cycle(self):
+        self.flush_buffer()
+        self.s.setblocking(1)
+        self.s.settimeout(1)
         try:
             while 1:
                 data = self.s.recv(1024).decode('utf-8')
@@ -89,7 +99,7 @@ class Blue:
                 if ';' in data:
                     self.signals.dataStreamFinished.emit("success")
                     return
-                if (len(data)==0):
+                if (len(data) == 0):
                     return
         except Exception as e:
             print(e)
@@ -100,13 +110,16 @@ class Blue:
     # run in other thread
     # signal to emit
     def data_reception_cycle2(self, signal):
+        self.flush_buffer()
+        self.s.setblocking(1)
+        self.s.settimeout(1)
         try:
             while 1:
                 data = self.s.recv(1024).decode('utf-8')
                 if ';' in data:
                     return
                 signal.emit(data)
-                if (len(data)==0):
+                if (len(data) == 0):
                     return
         except Exception as e:
             print(e)
@@ -118,15 +131,15 @@ class Blue:
         self.setConnected(False)
 
     def list_devices(self):
-        nearby_devices = discover_devices(lookup_names = True)
+        nearby_devices = discover_devices(lookup_names=True)
         for addr, name in nearby_devices:
-            self.device_combo.addItem(name + "(" + addr + ")") 
+            self.device_combo.addItem(name + "(" + addr + ")")
 
     def setConnected(self, b):
         if b:
             self.connected = True
             self.signals.statusChanged.emit("connected")
-            
+
         else:
             self.connected = False
             self.signals.statusChanged.emit("not_connected")
@@ -154,4 +167,26 @@ class Blue:
             self.mainwindow.amsversionText.setText(to_display)
         except Exception as e:
             self.mainwindow.amsversionText.setText("Error: ", e)
+            print(e)
+
+    def setLowPower(self):
+        self.send_message("AMS_LOWPOWER()")
+        try:
+            self.flush_buffer()
+            response = self.receive_message()
+            to_display = response.split("AMS_MSG(")[1].split(");")[0]
+            self.mainwindow.powerText.setText(to_display)
+        except Exception as e:
+            self.mainwindow.powerText.setText("Error: ", e)
+            print(e)
+
+    def wakeUp(self):
+        self.send_message("AMS_WAKEUP()")
+        try:
+            self.flush_buffer()
+            response = self.receive_message()
+            to_display = response.split("AMS_MSG(")[1].split(");")[0]
+            self.mainwindow.powerText.setText(to_display)
+        except Exception as e:
+            self.mainwindow.powerText.setText("Error: ", e)
             print(e)
