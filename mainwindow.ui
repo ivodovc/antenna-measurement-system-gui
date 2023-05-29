@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>812</width>
-    <height>656</height>
+    <height>612</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,11 +20,11 @@
       <x>20</x>
       <y>10</y>
       <width>781</width>
-      <height>601</height>
+      <height>551</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="Tab1">
      <attribute name="title">
@@ -60,7 +60,7 @@ border-color: rgb(0, 0, 0);}</string>
        <item row="1" column="1" colspan="4">
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Linear frequency sweep configuration (27-2700 MHz)</string>
+          <string>Linear frequency sweep configuration (27-6000 MHz)</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -125,6 +125,9 @@ border-color: rgb(0, 0, 0);}</string>
        </item>
        <item row="3" column="2">
         <widget class="QLineEdit" name="stepEdit">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
          <property name="text">
           <string>10</string>
          </property>
@@ -140,7 +143,7 @@ border-color: rgb(0, 0, 0);}</string>
        <item row="3" column="3">
         <widget class="QLabel" name="label_27">
          <property name="enabled">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="text">
           <string>show</string>
@@ -201,7 +204,7 @@ border-color: rgb(0, 0, 0);}</string>
         <x>10</x>
         <y>130</y>
         <width>761</width>
-        <height>411</height>
+        <height>381</height>
        </rect>
       </property>
       <property name="autoFillBackground">
@@ -276,61 +279,11 @@ Power</string>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="gridWidget2" native="true">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>620</x>
-        <y>10</y>
-        <width>131</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QWidget#gridWidget2{
-border-radius: 5px; border: 1px solid white;
-border-color: rgb(0, 0, 0);
-}</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_2">
-       <property name="leftMargin">
-        <number>5</number>
-       </property>
-       <property name="topMargin">
-        <number>5</number>
-       </property>
-       <property name="rightMargin">
-        <number>5</number>
-       </property>
-       <property name="bottomMargin">
-        <number>5</number>
-       </property>
-       <item row="2" column="1">
-        <widget class="QLineEdit" name="lineEdit_4">
-         <property name="text">
-          <string>filename.csv</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0" colspan="2">
-        <widget class="QPushButton" name="saveButton">
-         <property name="mouseTracking">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Save as CSV</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
      <widget class="QPushButton" name="newWindowButton">
       <property name="geometry">
        <rect>
-        <x>630</x>
-        <y>90</y>
+        <x>620</x>
+        <y>40</y>
         <width>131</width>
         <height>31</height>
        </rect>
@@ -435,8 +388,8 @@ border-color: rgb(0, 0, 0);
        <rect>
         <x>11</x>
         <y>11</y>
-        <width>501</width>
-        <height>102</height>
+        <width>411</width>
+        <height>71</height>
        </rect>
       </property>
       <property name="styleSheet">
@@ -457,6 +410,13 @@ border-color: rgb(0, 0, 0);}</string>
        <property name="bottomMargin">
         <number>5</number>
        </property>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_82">
+         <property name="text">
+          <string>Frequency [MHz]</string>
+         </property>
+        </widget>
+       </item>
        <item row="1" column="0" colspan="3">
         <widget class="QLabel" name="label_81">
          <property name="text">
@@ -464,20 +424,6 @@ border-color: rgb(0, 0, 0);}</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <widget class="QPushButton" name="singleStartButton">
-         <property name="text">
-          <string>SET FREQ</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0" colspan="4">
-        <widget class="QLabel" name="msgLabel_10">
-         <property name="text">
-          <string>Message:</string>
          </property>
         </widget>
        </item>
@@ -497,10 +443,10 @@ border-color: rgb(0, 0, 0);}</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_82">
+       <item row="2" column="2">
+        <widget class="QPushButton" name="singleStartButton">
          <property name="text">
-          <string>Frequency [MHz]</string>
+          <string>SET FREQ</string>
          </property>
         </widget>
        </item>
@@ -509,8 +455,8 @@ border-color: rgb(0, 0, 0);}</string>
      <widget class="QWidget" name="PLLsettingsWidget_10" native="true">
       <property name="geometry">
        <rect>
-        <x>521</x>
-        <y>11</y>
+        <x>430</x>
+        <y>10</y>
         <width>91</width>
         <height>71</height>
        </rect>
@@ -574,7 +520,7 @@ Power</string>
      <widget class="QPushButton" name="singleStopButton">
       <property name="geometry">
        <rect>
-        <x>520</x>
+        <x>350</x>
         <y>90</y>
         <width>111</width>
         <height>41</height>
@@ -583,6 +529,21 @@ Power</string>
       <property name="text">
        <string>Stop
 (Disables RFOUT)</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_22">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>90</y>
+        <width>201</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>In order to set new frequency ,
+STOP button needs to be pressed first.
+</string>
       </property>
      </widget>
     </widget>
@@ -747,30 +708,19 @@ border-color: rgb(0, 0, 0);
  (Disables RFOUT)</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_18">
+     <widget class="QLabel" name="label_23">
       <property name="geometry">
        <rect>
-        <x>370</x>
-        <y>150</y>
-        <width>49</width>
-        <height>16</height>
+        <x>20</x>
+        <y>320</y>
+        <width>221</width>
+        <height>61</height>
        </rect>
       </property>
       <property name="text">
-       <string>Message:</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="msgLabelRegs">
-      <property name="geometry">
-       <rect>
-        <x>440</x>
-        <y>160</y>
-        <width>49</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>...</string>
+       <string>In order to send new register values ,
+STOP button needs to be pressed first.
+</string>
       </property>
      </widget>
     </widget>
@@ -896,93 +846,6 @@ border-color: rgb(0, 0, 0);}</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="4">
-        <widget class="QComboBox" name="step_comboBox_2">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <item>
-          <property name="text">
-           <string>0.5 MHz</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>0.25 MHz</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>125 kHz</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>62.5 kHz</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>31.25 kHz</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>15.625 kHz</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>7.8125 kHz</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="2" column="3">
-        <widget class="QLabel" name="label_19">
-         <property name="text">
-          <string>To [MHz]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="4">
-        <widget class="QLineEdit" name="calibToEdit">
-         <property name="text">
-          <string>1000</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="2">
-        <widget class="QLineEdit" name="calibStepEdit">
-         <property name="text">
-          <string>10</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLabel" name="label_20">
-         <property name="text">
-          <string>From [MHz]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="3">
-        <widget class="QLabel" name="label_28">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="text">
-          <string>show</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLabel" name="label_21">
-         <property name="text">
-          <string>Step [MHz]</string>
-         </property>
-        </widget>
-       </item>
        <item row="2" column="2">
         <widget class="QLineEdit" name="calibFromEdit">
          <property name="cursor">
@@ -999,26 +862,38 @@ border-color: rgb(0, 0, 0);}</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="2">
-        <widget class="QRadioButton" name="calibIntStepRadioButton">
+       <item row="3" column="2">
+        <widget class="QLineEdit" name="calibStepEdit">
          <property name="text">
-          <string>IntStep</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
+          <string>10</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="4">
-        <widget class="QRadioButton" name="calibMiniStepRadioButton">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
+       <item row="3" column="1">
+        <widget class="QLabel" name="label_21">
          <property name="text">
-          <string>MiniStep</string>
+          <string>Step [MHz]</string>
          </property>
-         <property name="autoRepeatDelay">
-          <number>100</number>
+        </widget>
+       </item>
+       <item row="2" column="3">
+        <widget class="QLabel" name="label_19">
+         <property name="text">
+          <string>To [MHz]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="4">
+        <widget class="QLineEdit" name="calibToEdit">
+         <property name="text">
+          <string>1000</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLabel" name="label_20">
+         <property name="text">
+          <string>From [MHz]</string>
          </property>
         </widget>
        </item>
@@ -1075,19 +950,6 @@ border-color: rgb(0, 0, 0);}</string>
        <string>name:</string>
       </property>
      </widget>
-     <widget class="QLabel" name="msgLabel_3">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>120</y>
-        <width>201</width>
-        <height>24</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Message:</string>
-      </property>
-     </widget>
     </widget>
     <widget class="QWidget" name="Tab4">
      <attribute name="title">
@@ -1100,7 +962,7 @@ border-color: rgb(0, 0, 0);}</string>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>120</y>
+        <y>390</y>
         <width>591</width>
         <height>81</height>
        </rect>
@@ -1163,7 +1025,8 @@ border-color: rgb(0, 0, 0);
        </rect>
       </property>
       <property name="text">
-       <string>This program attepmts to connect automatically to Antenna Measurement System (address 98:D3:31:90:53:B3)
+       <string>This program attepmts to connect automatically to Antenna Measurement System.
+Address of a device can be chosen below
 </string>
       </property>
      </widget>
@@ -1200,9 +1063,9 @@ border-color: rgb(0, 0, 0);
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>210</y>
-        <width>551</width>
-        <height>101</height>
+        <y>110</y>
+        <width>541</width>
+        <height>51</height>
        </rect>
       </property>
       <property name="autoFillBackground">
@@ -1227,7 +1090,14 @@ border-color: rgb(0, 0, 0);
        <property name="bottomMargin">
         <number>15</number>
        </property>
-       <item row="0" column="1" rowspan="2">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="amsversionButton">
+         <property name="text">
+          <string>AMS_VERSION()</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
         <widget class="QLabel" name="amsversionText">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -1240,20 +1110,6 @@ border-color: rgb(0, 0, 0);
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QPushButton" name="amsversionButton">
-         <property name="text">
-          <string>AMS_VERSION()</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QPushButton" name="amshowareyouButton">
-         <property name="text">
-          <string>AMS_HOWAREYOU()</string>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="powerSettingsWidget" native="true">
@@ -1263,7 +1119,7 @@ border-color: rgb(0, 0, 0);
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>320</y>
+        <y>170</y>
         <width>551</width>
         <height>101</height>
        </rect>
@@ -1318,6 +1174,74 @@ border-color: rgb(0, 0, 0);
         </widget>
        </item>
       </layout>
+     </widget>
+     <widget class="QRadioButton" name="defaultDeviceRadioButton">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>310</y>
+        <width>231</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Use default address: 98:D3:31:90:53:B3</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="customDeviceRadioButton">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>340</y>
+        <width>121</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Use other device:</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="customAddressEdit">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>340</y>
+        <width>113</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>98:D3:31:90:53:B3</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_18">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>370</y>
+        <width>321</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>To find out address of a device, use device discovery below</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_24">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>480</y>
+        <width>381</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Refresh_List button is blocking and may take up to 6 seconds to process</string>
+      </property>
      </widget>
     </widget>
    </widget>
@@ -1375,8 +1299,8 @@ border-color: rgb(0, 0, 0);
    <widget class="QLabel" name="msgLabel">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>620</y>
+      <x>20</x>
+      <y>570</y>
       <width>341</width>
       <height>20</height>
      </rect>

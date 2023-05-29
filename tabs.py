@@ -1,7 +1,23 @@
-from PyQt6 import QtCore, QtGui, QtWidgets
+"""
+    Antenna Measurement system GUI control program
+    Copyright (C) 2023
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>
+"""
+
+from PyQt6 import QtWidgets
 from PyQt6.QtCore import *
-from PyQt6 import uic
-from pyqtgraph import PlotWidget
 import pyqtgraph as pg
 import random
 import threading
@@ -23,10 +39,9 @@ class GraphWindow(QtWidgets.QMainWindow):
 class GraphHandler:
     
     # display mode could be "default", "refcoef" or "SWR"
-    def __init__(self, mainwindow, graphwidget, display_mode="default"):
+    def __init__(self, mainwindow, graphwidget):
         self.mainwindow = mainwindow
         self.graphwidget = graphwidget
-        self.set_new_display_mode("default", 4)
         self.init_plot()
         self.graphwidgetgeometry = self.graphwidget.frameGeometry()
         self.reference_lines = {}
@@ -34,27 +49,8 @@ class GraphHandler:
         self.data_x, self.data_y = [],[]
         self.clear()
 
-    def set_new_display_mode(self, display_mode, pwr_level):
-        allowed = ["default", "refcoef", "SWR"]
-        self.pwr_level = pwr_level
-        if (display_mode in allowed):
-            self.display_mode = display_mode
-            if (self.display_mode=="refcoef"):
-                self.y_fun = get_RC
-            elif (self.display_mode=="SWR"):
-                self.y_fun = get_SWR
-            else:
-                # return plain simple ADC reading
-                self.y_fun = lambda freq, ADC, pwr_level: ADC
-        else:
-            self.display_mode = "default"
-
     def plot(self, x, y, name):
-        #y_new = []
-        #for a in y:
-        #    y_new.append(-a)
         if "csv" in name:
-            #plot_color = (0,0,0)
             plot_color=(random.random()*255, random.random()*255, random.random()*255)
             w = 2
         else:
@@ -68,7 +64,6 @@ class GraphHandler:
         self.graphwidget.clear()
         self.plotLines = []
         self.draw_reference_lines()
-        self.continuous_points = self.graphwidget.plot([750], [2000], pen=None, symbol='o', symbolSize=5, symbolBrush=('r'))
         #self.infinite_line = self.graphwidget.infiniteLine(750)
 
     def draw_reference_lines(self):
@@ -83,6 +78,7 @@ class GraphHandler:
         self.graphwidget.setLabel('left', 'ADC', **styles)
         self.graphwidget.setLabel('bottom', 'freq [MHz]', **styles)
         self.graphwidget.addLegend()
+        self.graphwidget.invertY(True)
 
     def createNewPlotLine(self, name=None):
         if name is None:
@@ -107,14 +103,8 @@ class GraphHandler:
 
     def newDataArrived(self, data):
         fx, fy = self.split_raw_data(data)
-        fy_disp = []
-        for i in range(len(fx)):
-            freq = fx[i]
-            adc_y = fy[i]
-            y_display = adc_y#self.y_fun(freq, adc_y, self.pwr_level)
-            fy_disp.append(y_display)
         self.data_x += fx
-        self.data_y += fy_disp
+        self.data_y += fy
         self.plotLines[-1].setData(self.data_x, self.data_y)
 
     def prepareForContTracing(self):
@@ -123,6 +113,7 @@ class GraphHandler:
         self.i = None
         self.raw_buffer = ""
         self.buff_index = 0
+        self.continuous_points = self.graphwidget.plot([0], [0], pen=None, symbol='o', symbolSize=5, symbolBrush=('r'))
 
     def newDataArrivedCont(self, data):
         fx,fy = self.split_raw_data(data)
@@ -188,8 +179,12 @@ class SweepTab:
         self.mw.clearButton.clicked.connect(self.clearGraphClicked)
         self.mw.sweepStopButton.clicked.connect(self.mw.sendStop)
 
+        self.mw.intStepRadioButton.toggled.connect(self.step_radio_button_changed)
+        self.mw.singleRadioButton.toggled.connect(self.sweep_radio_button_changed)
+
         self.mw.comboBox.currentTextChanged.connect(self.combotextChanged)
         self.update_ref_data()
+        self.step_radio_button_changed()
 
     def clearGraphClicked(self):
         self.graph.clear()
@@ -208,6 +203,7 @@ class SweepTab:
         else:
             #bad parsing
             return
+        self.graph.graphwidget.setXRange(from_int, to_int)
         self.graph.pwr_level = pwr_int
         command = "AMS_SWEEP_CONT(" + str(from_int) + ", " + str(to_int) + ", " + str(step_int) + "," + str(pwr_int) + ")"
         self.mw.msgLabel.setText("Command '" + command + "' sent.")
@@ -226,6 +222,7 @@ class SweepTab:
             #bad parsing
             return
         self.graph.pwr_level = pwr_int
+        self.graph.graphwidget.setXRange(from_int, to_int)
         if (self.mw.intStepRadioButton.isChecked()):
             command = "AMS_SWEEP(" + str(from_int) + ", " + str(to_int) + ", " + str(step_int) + "," + str(pwr_int) + ")"
         elif (self.mw.miniStepRadioButton.isChecked()):
@@ -276,7 +273,7 @@ class SweepTab:
         if (from_int >= to_int):
             self.mw.msgLabel.setText("From frequency should be smaller than To frequency")
             return
-        if (from_int > 6000 or from_int < 24):
+        if (from_int > 6000 or from_int < 25):
             self.mw.msgLabel.setText("From out of range")
             return
         if (to_int > 6000 or to_int < 25):
@@ -312,6 +309,22 @@ class SweepTab:
         self.graph.reference_lines = ref
         self.graph.clear()
 
+    def step_radio_button_changed(self):
+        if (self.mw.intStepRadioButton.isChecked()):
+            self.mw.label_4.setEnabled(True)
+            self.mw.stepEdit.setEnabled(True)
+            self.mw.step_comboBox.setEnabled(False)
+            self.mw.label_27.setEnabled(False)
+        elif (self.mw.miniStepRadioButton.isChecked()):
+            self.mw.singleRadioButton.setChecked(True)
+            self.mw.step_comboBox.setEnabled(True)
+            self.mw.label_27.setEnabled(True)
+            self.mw.label_4.setEnabled(False)
+            self.mw.stepEdit.setEnabled(False)
+
+    def sweep_radio_button_changed(self):
+        if (self.mw.contRadioButton.isChecked()):
+            self.mw.intStepRadioButton.setChecked(True)
 
 class CalibrationTab:
     

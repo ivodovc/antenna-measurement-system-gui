@@ -1,3 +1,21 @@
+"""
+    Antenna Measurement system GUI control program
+    Copyright (C) 2023
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>
+"""
+
 import socket
 from bluetooth import *
 from PyQt6.QtCore import *
@@ -20,10 +38,10 @@ class Blue:
         self.mainwindow.disconnectButton.clicked.connect(self.disconnect)
         self.mainwindow.connectButton.clicked.connect(self.connectButtonAction)
         self.mainwindow.amsversionButton.clicked.connect(self.amsversion)
-        self.mainwindow.amshowareyouButton.clicked.connect(self.amshowareyou)
         self.mainwindow.lowPowerButton.clicked.connect(self.setLowPower)
         self.mainwindow.wakeUpButton.clicked.connect(self.wakeUp)
 
+        self.mainwindow.defaultDeviceRadioButton.toggled.connect(self.radiobuttonschanged)
         self.connected = False
         self.signals = CustomSignals()
 
@@ -33,7 +51,12 @@ class Blue:
 
     def connect(self):
         # Server Address is set
-        HC06_address = '98:D3:31:90:53:B3'
+        if (self.mainwindow.defaultDeviceRadioButton.isChecked()):
+            HC06_address = '98:D3:31:90:53:B3'
+        elif (self.mainwindow.customDeviceRadioButton.isChecked()):
+            addr = self.mainwindow.customAddressEdit.text()
+            HC06_address = addr
+            print(HC06_address)
         port = 1  # HC06 setting
         self.s = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
         # self.mainwindow.status_widget.setStyleSheet(self.amberStyleSheet)
@@ -188,3 +211,9 @@ class Blue:
         except Exception as e:
             self.mainwindow.powerText.setText("Error: ", e)
             print(e)
+
+    def radiobuttonschanged(self):
+        if (self.mainwindow.defaultDeviceRadioButton.isChecked()):
+            self.mainwindow.connection_widget.setEnabled(False)
+        elif (self.mainwindow.customDeviceRadioButton.isChecked()):
+            self.mainwindow.connection_widget.setEnabled(True)
