@@ -1,7 +1,5 @@
 import socket
-import time
 from bluetooth import *
-from PyQt6 import QtGui
 from PyQt6.QtCore import *
 import threading
 

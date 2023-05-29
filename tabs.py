@@ -54,8 +54,8 @@ class GraphHandler:
         #for a in y:
         #    y_new.append(-a)
         if "csv" in name:
-            plot_color = (0,0,0)
-            #plot_color=(random.random()*255, random.random()*255, random.random()*255)
+            #plot_color = (0,0,0)
+            plot_color=(random.random()*255, random.random()*255, random.random()*255)
             w = 2
         else:
             plot_color=(random.random()*255, random.random()*255, random.random()*255)
@@ -75,24 +75,6 @@ class GraphHandler:
         for line in self.reference_lines:
             data = self.reference_lines[line]
             self.plot(data[0], data[1], line)
-
-    def draw_reference_lines_old(self):
-        cal_short_y_values = []
-        cal_match_y_values = []
-        for i in range(len(cal_short[0])):
-            freq = cal_short[0][i]
-            adc = cal_short[1][i]
-            y = self.y_fun(freq, adc, self.pwr_level)
-            cal_short_y_values.append(y)
-        for i in range(len(cal_match[0])):
-            freq = cal_match[0][i]
-            adc = cal_match[1][i]
-            y = self.y_fun(freq, adc, self.pwr_level)
-            cal_match_y_values.append(y)
-        self.plot(cal_short[0], cal_short_y_values, "short_ref")
-        self.plot(cal_match[0], cal_match_y_values, "match_ref")
-        #self.plot(cal_short[0], cal_short[1], "short_ref")
-        #self.plot(cal_match[0], cal_match[1], "match_ref")
 
     def init_plot(self):
         self.graphwidget.setBackground('w')
@@ -330,6 +312,7 @@ class SweepTab:
         self.graph.reference_lines = ref
         self.graph.clear()
 
+
 class CalibrationTab:
     
     def __init__(self, mainwindow):
@@ -338,16 +321,13 @@ class CalibrationTab:
 
         self.graph = GraphHandler(self.mw, self.mw.calibrateGraphWidget)
         
-        self.mw.calibrateShortButton.clicked.connect(self.calibrate_short_button)
-        self.mw.calibrateMatchButton.clicked.connect(self.calibrate_match_button)
-        self.mw.testMeasureButton.clicked.connect(self.test_measure_button)
         self.mw.calibrateEditButton.clicked.connect(self.calibrate_edit_button)
         self.mw.comboBox_3.currentTextChanged.connect(self.combotextChanged)
 
         self.update_cal_data()
-        #self.mw.clearButton.clicked.connect(self.clearGraphClicked)
+        # self.mw.clearButton.clicked.connect(self.clearGraphClicked)
 
-        #self.blue.signals.dataUpdated.connect(self.graph.updateData)
+        # self.blue.signals.dataUpdated.connect(self.graph.updateData)
 
     def calibrate_edit_button(self):
         # from and to frequency
@@ -362,73 +342,14 @@ class CalibrationTab:
         step_f = int(step_text)
         pwr_int = int(self.mw.comboBox_3.currentText()[0])
         command = "AMS_SWEEP(" + str(from_f) + ", " + str(to_f) + ", " + str(step_f) + "," + str(pwr_int) + ")"
-        #self.mw.msgLabel.setText("Command '" + command + "' sent.")
+        # self.mw.msgLabel.setText("Command '" + command + "' sent.")
         if (self.blue.isConnected()):
             self.mw.setFinishedConnector(self.calibration_finished)
             self.cal_next_name = ref_name
             self.cal_next_pwr = str(pwr_int)
             self.graph.clear()
             self.blue.send_message(command)
-            self.start_data_reception(ref_name + "_" +str(pwr_int))
-        else:
-            self.mw.msgLabel.setText("Not connected to AMS ")
-
-    def calibrate_short_button(self):
-        # from and to frequency
-        cal_type = "short"
-        from_f = 25
-        to_f = 2700
-        step_f = 1
-        pwr_int = int(self.mw.comboBox_3.currentText()[0])
-        command = "AMS_SWEEP(" + str(from_f) + ", " + str(to_f) + ", " + str(step_f) + "," + str(pwr_int) + ")"
-        self.mw.msgLabel.setText("Command '" + command + "' sent.")
-        if (self.blue.isConnected()):
-            self.mw.setFinishedConnector(self.calibration_finished)
-            self.cal_next_type = cal_type
-            self.cal_next_pwr = str(pwr_int)
-            delete_cal_data(cal_type, str(pwr_int))
-            self.graph.clear()
-            self.blue.send_message(command)
-            self.start_data_reception(cal_type + "_" +str(pwr_int))
-        else:
-            self.mw.msgLabel.setText("Not connected to AMS ")
-
-    def calibrate_match_button(self):
-        # from and to frequency
-        cal_type = "match"
-        from_f = 25
-        to_f = 2700
-        step_f = 1
-        pwr_int = int(self.mw.comboBox_3.currentText()[0])
-        command = "AMS_SWEEP(" + str(from_f) + ", " + str(to_f) + ", " + str(step_f) + "," + str(pwr_int) + ")"
-        self.mw.msgLabel.setText("Command '" + command + "' sent.")
-        if (self.blue.isConnected()):
-            self.mw.setFinishedConnector(self.calibration_finished)
-            self.cal_next_type = cal_type
-            self.cal_next_pwr = str(pwr_int)
-            delete_cal_data(cal_type, str(pwr_int))
-            self.graph.clear()
-            self.blue.send_message(command)
-            self.start_data_reception(cal_type + "_" +str(pwr_int))
-        else:
-            self.mw.msgLabel.setText("Not connected to AMS ")
-
-    def test_measure_button(self):
-        # from and to frequency
-        print("CALLING")
-        cal_type = "none"
-        from_f = 25
-        to_f = 2700
-        step_f = 1
-        pwr_int = int(self.mw.comboBox_3.currentText()[0])
-        command = "AMS_SWEEP(" + str(from_f) + ", " + str(to_f) + ", " + str(step_f) + "," + str(pwr_int) + ")"
-        self.mw.msgLabel.setText("Command '" + command + "' sent.")
-        if (self.blue.isConnected()):
-            self.cal_next_type = cal_type
-            self.cal_next_pwr = str(pwr_int)
-            self.blue.send_message(command)
-            self.graph.clear()
-            self.start_data_reception("testline")
+            self.start_data_reception(ref_name + "_" + str(pwr_int))
         else:
             self.mw.msgLabel.setText("Not connected to AMS ")
 
@@ -443,7 +364,7 @@ class CalibrationTab:
         cal_data = self.graph.plotLines[-1].getData()
         save_reference(self.cal_next_name, self.cal_next_pwr, cal_data)
         # to prevent unvanted overwrites set empty function
-        self.mw.setFinishedConnector(lambda :None)
+        self.mw.setFinishedConnector(lambda: None)
 
     def combotextChanged(self):
         self.update_cal_data()
@@ -454,19 +375,20 @@ class CalibrationTab:
         self.graph.reference_lines = ref
         self.graph.clear()
 
+
 class SingleTab:
 
     def __init__(self, mainwindow):
         self.mw = mainwindow
         self.blue = mainwindow.blue
-        
+
         self.mw.singleStartButton.clicked.connect(self.start_single)
         self.mw.singleStopButton.clicked.connect(self.mw.sendStop)
 
     def start_single(self):
         # from and to frequency
         f = int(self.mw.singleFreqEdit.text())
-        if f<25 or f>6000:
+        if f < 25 or f > 6000:
             # invalid freq
             return
         pwr_int = int(self.mw.singleComboBox.currentText()[0])
@@ -477,12 +399,13 @@ class SingleTab:
         else:
             self.mw.msgLabel.setText("Not connected to AMS ")
 
+
 class AdvancedTab:
 
     def __init__(self, mainwindow):
         self.mw = mainwindow
         self.blue = mainwindow.blue
-        
+
         self.mw.sendRegistersButton.clicked.connect(self.send_regs)
         self.mw.stopRegistersButton.clicked.connect(self.mw.sendStop)
 
@@ -504,8 +427,8 @@ class AdvancedTab:
         except Exception as e:
             print("Error when parsing register values", e)
             return
-        command = "AMS_REGISTER(" + reg0_text + ", "  + reg1_text + ", "  + reg2_text + ", "  + reg3_text + ", " + reg4_text + ", "  + reg5_text + ")"  
-        if len(command)>100:
+        command = "AMS_REGISTER(" + reg0_text + ", " + reg1_text + ", " + reg2_text + ", " + reg3_text + ", " + reg4_text + ", " + reg5_text + ")"
+        if len(command) > 100:
             print("Command too long when sending registers")
             return
         self.mw.msgLabel.setText("Command '" + command + "' sent.")
@@ -513,7 +436,3 @@ class AdvancedTab:
             self.blue.send_message(command)
         else:
             self.mw.msgLabel.setText("Not connected to AMS ")
-
-            
-#cal_short = load_data_manual_csv("calibration_short.csv")
-#cal_match = load_data_manual_csv("calibration_match.csv")
